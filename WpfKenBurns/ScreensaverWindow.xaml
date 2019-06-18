@@ -1,0 +1,10 @@
+﻿<Window x:Class="WpfKenBurns.ScreensaverWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfKenBurns"
+        mc:Ignorable="d"
+        Title="Screensaver" Height="450" Width="800" WindowStyle="None" Loaded="Window_Loaded" KeyDown="Window_KeyDown" Background="Black" MouseMove="Window_MouseMove" MouseDown="Window_MouseDown" WindowStartupLocation="Manual" Left="0" Top="0" ShowInTaskbar="False" ResizeMode="NoResize">
+    <Grid Name="grid" />
+</Window>
