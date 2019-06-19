@@ -15,6 +15,7 @@
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -30,55 +31,75 @@ namespace WpfKenBurns
     /// </summary>
     public partial class ScreensaverWindow : Window
     {
-        private BitmapImage nextImage;
+        private BitmapImage currentImage = null;
         private Random random = new Random();
         private Point lastMousePosition = default;
         private bool IsPreviewWindow { get; }
+        private List<string> Files { get; set; }
+        private RECT Monitor { get; set; }
 
         public ScreensaverWindow(IntPtr previewHandle)
         {
             InitializeComponent();
+            
+            IntPtr windowHandle = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
 
-            if (previewHandle != IntPtr.Zero)
-            {
-                IntPtr windowHandle = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
+            // Set the preview window as the parent of this window
+            NativeMethods.SetParent(windowHandle, previewHandle);
 
-                // Set the preview window as the parent of this window
-                NativeMethods.SetParent(windowHandle, previewHandle);
+            // Make this a child window so it will close when the parent dialog closes
+            // GWL_STYLE = -16, WS_CHILD = 0x40000000
+            NativeMethods.SetWindowLong(windowHandle, -16, 0x40000000);
 
-                // Make this a child window so it will close when the parent dialog closes
-                // GWL_STYLE = -16, WS_CHILD = 0x40000000
-                NativeMethods.SetWindowLong(windowHandle, -16, 0x40000000);
+            // Place our window inside the parent
+            RECT parentRect;
+            NativeMethods.GetClientRect(previewHandle, out parentRect);
 
-                // Place our window inside the parent
-                RECT parentRect;
-                NativeMethods.GetClientRect(previewHandle, out parentRect);
+            Width = parentRect.Width;
+            Height = parentRect.Height;
+            
+            IsPreviewWindow = true;
 
-                Width = parentRect.Width;
-                Height = parentRect.Height;
+            Monitor = parentRect;
+        }
 
-                IsPreviewWindow = true;
-            }
-            else
-            {
-                WindowState = WindowState.Maximized;
-                Topmost = true;
-                Cursor = null;
-            }
+        public ScreensaverWindow(RECT monitor)
+        {
+            InitializeComponent();
+
+            Topmost = true;
+            Cursor = null;
+
+            Top = monitor.Top;
+            Left = monitor.Left;
+            Width = monitor.Width;
+            Height = monitor.Height;
+
+            Monitor = monitor;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            UpdateNextImage();
+            ConfigurationManager.Load();
+
+            Files = new List<string>();
+
+            foreach (ScreensaverImageFolder folder in ConfigurationManager.Folders)
+            {
+                Files.AddRange(Directory.GetFiles(folder.Path, "*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
+            }
+
+            UpdateCurrentImage();
             KenBurns();
         }
 
         private void KenBurns()
         {
-            double duration = 5;
-            double movementFactor = 1.02;
-            double scaleFactor = 1.05;
-            double fadeDuration = 1;
+            double duration       = ConfigurationManager.Duration;
+            double movementFactor = ConfigurationManager.MovementFactor;
+            double scaleFactor    = ConfigurationManager.ScaleFactor;
+            double fadeDuration   = ConfigurationManager.FadeDuration;
+            double totalDuration  = duration + fadeDuration * 2;
 
             double maxDistanceX = Width * (movementFactor - 1);
             double maxDistanceY = Height * (movementFactor - 1);
@@ -88,7 +109,7 @@ namespace WpfKenBurns
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top,
                 Stretch = Stretch.UniformToFill,
-                Source = nextImage
+                Source = currentImage
             };
 
             grid.Children.Add(image);
@@ -119,9 +140,9 @@ namespace WpfKenBurns
             opacityAnimation.From = 0;
             opacityAnimation.To = 1;
 
-            marginAnimation.Duration = TimeSpan.FromSeconds(duration);
-            widthAnimation.Duration = TimeSpan.FromSeconds(duration);
-            heightAnimation.Duration = TimeSpan.FromSeconds(duration);
+            marginAnimation.Duration = TimeSpan.FromSeconds(totalDuration);
+            widthAnimation.Duration = TimeSpan.FromSeconds(totalDuration);
+            heightAnimation.Duration = TimeSpan.FromSeconds(totalDuration);
             opacityAnimation.Duration = TimeSpan.FromSeconds(fadeDuration);
 
             Storyboard.SetTarget(marginAnimation, image);
@@ -141,7 +162,7 @@ namespace WpfKenBurns
             storyboard.Children.Add(heightAnimation);
             storyboard.Children.Add(opacityAnimation);
 
-            storyboard.Duration = new Duration(TimeSpan.FromSeconds(duration));
+            storyboard.Duration = new Duration(TimeSpan.FromSeconds(totalDuration));
 
             bool nextStarted = false;
 
@@ -161,27 +182,39 @@ namespace WpfKenBurns
 
             storyboard.Begin();
 
-            UpdateNextImage();
+            UpdateCurrentImage();
         }
 
-        public void UpdateNextImage()
+        public void UpdateCurrentImage()
         {
-            string[] files = Directory.GetFiles(@"C:\Users\Nicolas\Nextcloud\Images\Screensaver");
+            if (Files.Count == 0) return;
 
-            nextImage = new BitmapImage();
-            nextImage.CacheOption = BitmapCacheOption.OnLoad;
-            nextImage.CreateOptions = BitmapCreateOptions.None;
+            string file;
 
-            nextImage.BeginInit();
-            nextImage.UriSource = new Uri(files[random.Next(files.Length)]);
-            nextImage.EndInit();
+            do
+            {
+                file = Files[random.Next(Files.Count)];
+            } while (false);
+
+            FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read);
+
+            currentImage = new BitmapImage();
+
+            currentImage.BeginInit();
+            currentImage.CacheOption = BitmapCacheOption.OnLoad;
+            currentImage.CreateOptions = BitmapCreateOptions.None;
+            currentImage.DecodePixelWidth = Monitor.Width;
+            currentImage.StreamSource = fileStream;
+            currentImage.EndInit();
+
+            fileStream.Dispose();
         }
 
         private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (IsPreviewWindow) return;
 
-            Close();
+            Application.Current.Shutdown();
         }
 
         private void Window_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -192,7 +225,7 @@ namespace WpfKenBurns
 
             if (lastMousePosition != default && (Math.Abs(lastMousePosition.X - pos.X) > 5 || Math.Abs(lastMousePosition.Y - pos.Y) > 5))
             {
-                Close();
+                Application.Current.Shutdown();
             }
 
             lastMousePosition = pos;
@@ -202,7 +235,7 @@ namespace WpfKenBurns
         {
             if (IsPreviewWindow) return;
 
-            Close();
+            Application.Current.Shutdown();
         }
     }
 }

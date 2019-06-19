@@ -1,8 +1,26 @@
-﻿using System;
+﻿// WpfKenBurns - A simple Ken Burns-style screensaver
+// Copyright © 2019 Nicolas Gnyra
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+// GNU Affero General Public License for more details.
+
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.If not, see<https://www.gnu.org/licenses/>.
+
+using System;
 using System.Runtime.InteropServices;
 
 namespace WpfKenBurns
 {
+    delegate bool EnumMonitorsDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
+
     [StructLayout(LayoutKind.Sequential)]
     public struct RECT
     {
@@ -99,6 +117,51 @@ namespace WpfKenBurns
         }
     }
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    internal struct MonitorInfoEx
+    {
+        /// <summary>
+        /// The size, in bytes, of the structure. Set this member to sizeof(MONITORINFOEX) (72) before calling the GetMonitorInfo function.
+        /// Doing so lets the function determine the type of structure you are passing to it.
+        /// </summary>
+        public int Size;
+
+        /// <summary>
+        /// A RECT structure that specifies the display monitor rectangle, expressed in virtual-screen coordinates.
+        /// Note that if the monitor is not the primary display monitor, some of the rectangle's coordinates may be negative values.
+        /// </summary>
+        public RECT Monitor;
+
+        /// <summary>
+        /// A RECT structure that specifies the work area rectangle of the display monitor that can be used by applications,
+        /// expressed in virtual-screen coordinates. Windows uses this rectangle to maximize an application on the monitor.
+        /// The rest of the area in rcMonitor contains system windows such as the task bar and side bars.
+        /// Note that if the monitor is not the primary display monitor, some of the rectangle's coordinates may be negative values.
+        /// </summary>
+        public RECT WorkArea;
+
+        /// <summary>
+        /// The attributes of the display monitor.
+        ///
+        /// This member can be the following value:
+        ///   1 : MONITORINFOF_PRIMARY
+        /// </summary>
+        public uint Flags;
+
+        /// <summary>
+        /// A string that specifies the device name of the monitor being used. Most applications have no use for a display monitor name,
+        /// and so can save some bytes by using a MONITORINFO structure.
+        /// </summary>
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string DeviceName;
+
+        public void Init()
+        {
+            this.Size = 40 + 2 * 32;
+            this.DeviceName = string.Empty;
+        }
+    }
+
     class NativeMethods
     {
         [DllImport("user32.dll")]
@@ -112,5 +175,11 @@ namespace WpfKenBurns
 
         [DllImport("user32.dll")]
         internal static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll")]
+        internal static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, EnumMonitorsDelegate lpfnEnum, IntPtr dwData);
+
+        [DllImport("user32.dll")]
+        internal static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfoEx lpmi);
     }
 }
