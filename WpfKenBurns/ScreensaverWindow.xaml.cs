@@ -16,7 +16,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
@@ -89,6 +91,7 @@ namespace WpfKenBurns
             }
             catch (Exception ex)
             {
+                Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
                 MessageBox.Show("Failed to load configuration: " + ex.Message);
                 Application.Current.Shutdown();
             }
@@ -132,12 +135,15 @@ namespace WpfKenBurns
 
             double angle = random.NextDouble() * Math.PI * 2;
 
-            Point p1 = new Point((Math.Cos(angle) - 1) * maxDistanceX / 2, (Math.Sin(angle) - 1) * maxDistanceY / 2);
-            Point p2 = new Point((-Math.Cos(angle) - 1) * maxDistanceX / 2, (-Math.Sin(angle) - 1) * maxDistanceY / 2);
-            Point offset = new Point((maxDistanceX - Math.Abs(p2.X - p1.X)) * (random.NextDouble() - 0.5), (maxDistanceY - Math.Abs(p2.Y - p1.Y)) * (random.NextDouble() - 0.5));
+            Point p1 = new Point(Math.Cos(angle) * maxDistanceX / 2, Math.Sin(angle) * maxDistanceY / 2);
+            Point p2 = new Point(-Math.Cos(angle) * maxDistanceX / 2, -Math.Sin(angle) * maxDistanceY / 2);
 
-            marginAnimation.From = new Thickness(p1.X + offset.X, p1.Y + offset.Y, 0, 0);
-            marginAnimation.To = new Thickness(p2.X + offset.X, p2.Y + offset.Y, 0, 0);
+            double scaleX = maxDistanceX / Math.Abs(p2.X - p1.X);
+            double scaleY = maxDistanceY / Math.Abs(p2.Y - p1.Y);
+            double scale = Math.Min(scaleX, scaleY);
+
+            marginAnimation.From = new Thickness(p1.X * scale - maxDistanceX / 2, p1.Y * scale - maxDistanceY / 2, 0, 0);
+            marginAnimation.To = new Thickness(p2.X * scale - maxDistanceX / 2, p2.Y * scale - maxDistanceY / 2, 0, 0);
 
             bool zoomDirection = random.Next(2) == 1;
             double fromScale = 1 + (zoomDirection ? scaleFactor : 0);
@@ -178,23 +184,23 @@ namespace WpfKenBurns
 
             bool nextStarted = false;
 
-            storyboard.CurrentTimeInvalidated += (e, args) =>
+            storyboard.CurrentTimeInvalidated += (sender, args) =>
             {
-                if (!nextStarted && storyboard.GetCurrentTime() >= TimeSpan.FromSeconds(duration - fadeDuration))
+                if (!nextStarted && storyboard.GetCurrentTime() > TimeSpan.FromSeconds(duration + fadeDuration))
                 {
                     nextStarted = true;
                     KenBurns();
                 }
             };
 
-            storyboard.Completed += (e, args) =>
+            storyboard.Completed += (sender, args) =>
             {
                 grid.Children.Remove(image);
             };
 
             storyboard.Begin();
 
-            new System.Threading.Thread(UpdateCurrentImage).Start();
+            new Thread(UpdateCurrentImage).Start();
         }
 
         public void UpdateCurrentImage()
@@ -212,18 +218,20 @@ namespace WpfKenBurns
 
             FileStream fileStream = new FileStream(files[fileIndex], FileMode.Open, FileAccess.Read);
 
-            currentImage = new BitmapImage();
+            BitmapImage image = new BitmapImage();
 
-            currentImage.BeginInit();
-            currentImage.CacheOption = BitmapCacheOption.OnLoad;
-            currentImage.CreateOptions = BitmapCreateOptions.None;
-            currentImage.DecodePixelWidth = targetWindowRect.Width;
-            currentImage.StreamSource = fileStream;
-            currentImage.EndInit();
-
-            currentImage.Freeze();
+            image.BeginInit();
+            image.CacheOption = BitmapCacheOption.OnLoad;
+            image.CreateOptions = BitmapCreateOptions.None;
+            image.DecodePixelWidth = targetWindowRect.Width;
+            image.StreamSource = fileStream;
+            image.EndInit();
 
             fileStream.Dispose();
+            
+            image.Freeze();
+
+            currentImage = image;
         }
 
         private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
