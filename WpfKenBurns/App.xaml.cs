@@ -31,10 +31,10 @@ namespace WpfKenBurns
             {
                 string mode = e.Args[0].Trim().ToLower();
 
-                if (mode.StartsWith("/c"))
+                if (mode.StartsWith("/s"))
                 {
-                    ConfigurationWindow window = new ConfigurationWindow();
-                    window.Show();
+                    ShowScreensaver();
+                    return;
                 }
                 else if (mode.StartsWith("/p"))
                 {
@@ -46,41 +46,40 @@ namespace WpfKenBurns
                     }
                     else
                     {
-                        strHandle = e.Args[0].Split(':').LastOrDefault();
+                        strHandle = e.Args[0].Split(':').ElementAtOrDefault(1);
                     }
 
                     if (int.TryParse(strHandle, out var intHandle))
                     {
-                        ShowScreensaver(new IntPtr(intHandle));
+                        ShowPreviewWindow(new IntPtr(intHandle));
+                        return;
                     }
                 }
-                else
-                {
-                    ShowScreensaver(IntPtr.Zero);
-                }
             }
-            else
-            {
-                ShowScreensaver(IntPtr.Zero);
-            }
+
+            ShowConfigurationWindow();
         }
 
-        private void ShowScreensaver(IntPtr handle)
+        private void ShowScreensaver()
         {
-            if (handle != IntPtr.Zero)
+            NativeMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData) =>
             {
-                ScreensaverWindow window = new ScreensaverWindow(handle);
+                ScreensaverWindow window = new ScreensaverWindow(lprcMonitor);
                 window.Show();
-            }
-            else
-            {
-                NativeMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData) =>
-                {
-                    ScreensaverWindow window = new ScreensaverWindow(lprcMonitor);
-                    window.Show();
-                    return true;
-                }, IntPtr.Zero);
-            }
+                return true;
+            }, IntPtr.Zero);
+        }
+
+        private void ShowPreviewWindow(IntPtr handle)
+        {
+            ScreensaverWindow window = new ScreensaverWindow(handle);
+            window.Show();
+        }
+
+        private void ShowConfigurationWindow()
+        {
+            ConfigurationWindow window = new ConfigurationWindow();
+            window.Show();
         }
     }
 }
