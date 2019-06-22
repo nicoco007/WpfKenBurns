@@ -44,7 +44,7 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock Text="Duration" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0"/>
-            <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding Duration}" Minimum="1" Maximum="15" TickPlacement="BottomRight"/>
+            <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding Duration}" Minimum="1" Maximum="15" TickPlacement="BottomRight" SmallChange="0.5"/>
             <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding Duration, Converter={StaticResource FloatToSecondsConverter}}" Margin="5,0" Grid.Column="2"/>
         </Grid>
 
@@ -56,7 +56,7 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock Text="Fade Duration" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0"/>
-            <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding FadeDuration}" Minimum="1" Maximum="5" TickPlacement="BottomRight"/>
+            <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding FadeDuration}" Minimum="0.5" Maximum="5" TickPlacement="BottomRight" LargeChange="0.5" TickFrequency="0.5" SmallChange="0.5"/>
             <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding FadeDuration, Converter={StaticResource FloatToSecondsConverter}}" Margin="5,0" Grid.Column="2"/>
         </Grid>
 

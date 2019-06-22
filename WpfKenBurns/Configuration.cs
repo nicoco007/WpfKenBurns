@@ -25,7 +25,7 @@ namespace WpfKenBurns
             {
                 if (duration == value) return;
 
-                duration = Clamp(value, 0, 30);
+                duration = Clamp(value, 1, 30);
                 NotifyPropertyChanged();
             }
         }
@@ -37,7 +37,7 @@ namespace WpfKenBurns
             {
                 if (fadeDuration == value) return;
 
-                fadeDuration = Clamp(value, 0, 30);
+                fadeDuration = Clamp(value, 0.5f, 30);
                 NotifyPropertyChanged();
             }
         }
