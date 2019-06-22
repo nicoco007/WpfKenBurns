@@ -5,7 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfKenBurns"
         mc:Ignorable="d"
-        Title="ConfigurationWindow" Height="400" Width="600" Loaded="Window_Loaded">
+        Title="ConfigurationWindow" Height="450" Width="600" Loaded="Window_Loaded">
+    <Window.Resources>
+        <local:FloatToSecondsConverter x:Key="FloatToSecondsConverter"/>
+        <local:FloatToPercentConverter x:Key="FloatToPercentConverter"/>
+    </Window.Resources>
     <Grid>
         <ListView x:Name="foldersListView" Height="200" Margin="10,10,10,0" VerticalAlignment="Top" SelectionMode="Single" SelectionChanged="FoldersListView_SelectionChanged">
             <ListView.View>
@@ -29,8 +33,59 @@
             </ListView.View>
         </ListView>
 
-        <Button Content="Save" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="75" Click="SaveButton_Click"/>
         <Button Content="Add Folder..." HorizontalAlignment="Left" Margin="10,215,0,0" VerticalAlignment="Top" Width="75" Click="AddFolderButton_Click"/>
         <Button x:Name="removeSelectedFolderButton" Content="Remove Selected Folder" HorizontalAlignment="Left" Margin="90,215,0,0" VerticalAlignment="Top" Width="140" Click="RemoveFolderButton_Click" IsEnabled="False"/>
+
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,260,5,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Duration" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0"/>
+            <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding Duration}" Minimum="1" Maximum="15" TickPlacement="BottomRight"/>
+            <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding Duration, Converter={StaticResource FloatToSecondsConverter}}" Margin="5,0" Grid.Column="2"/>
+        </Grid>
+
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,289,5,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Fade Duration" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0"/>
+            <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding FadeDuration}" Minimum="1" Maximum="5" TickPlacement="BottomRight"/>
+            <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding FadeDuration, Converter={StaticResource FloatToSecondsConverter}}" Margin="5,0" Grid.Column="2"/>
+        </Grid>
+
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,318,5,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Movement Scale" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0"/>
+            <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding MovementFactor}" Minimum="0" Maximum="0.5" LargeChange="0.1" SmallChange="0.01" TickPlacement="BottomRight" TickFrequency="0.1"/>
+            <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding MovementFactor, Converter={StaticResource FloatToPercentConverter}}" Margin="5,0" Grid.Column="2"/>
+        </Grid>
+
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,347,5,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Zoom" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0"/>
+            <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding ScaleFactor}" Minimum="0" Maximum="0.5" LargeChange="0.1" SmallChange="0.01" TickPlacement="BottomRight" TickFrequency="0.1"/>
+            <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding ScaleFactor, Converter={StaticResource FloatToPercentConverter}}" Margin="5,0" Grid.Column="2"/>
+        </Grid>
+
+        <Button Content="Reset" HorizontalAlignment="Right" Margin="0,0,180,10" VerticalAlignment="Bottom" Width="75" Click="ResetButton_Click"/>
+        <Button Content="Close" HorizontalAlignment="Right" Margin="0,0,95,10" VerticalAlignment="Bottom" Width="75" Click="CloseButton_Click"/>
+        <Button Content="Save" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="75" Click="SaveButton_Click"/>
     </Grid>
 </Window>

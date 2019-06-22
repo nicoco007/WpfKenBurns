@@ -23,11 +23,7 @@ namespace WpfKenBurns
 {
     public static class ConfigurationManager
     {
-        public static ObservableCollection<ScreensaverImageFolder> Folders { get; set; } = new ObservableCollection<ScreensaverImageFolder>();
-        public static float Duration { get; set; } = 7;
-        public static float FadeDuration { get; set; } = 1.5f;
-        public static float ScaleFactor { get; set; } = 1.05f;
-        public static float MovementFactor { get; set; } = 1.05f;
+        public static Configuration Configuration { get; set; } = new Configuration();
 
         private static readonly byte[] MAGIC = new byte[] { 0x54, 0x7d, 0x1d, 0x74 };
         private static readonly byte REVISION = 0;
@@ -44,9 +40,14 @@ namespace WpfKenBurns
             writer.Write(MAGIC);
             writer.Write(REVISION);
 
-            writer.Write(Folders.Count);
+            writer.Write(Configuration.Duration);
+            writer.Write(Configuration.FadeDuration);
+            writer.Write(Configuration.MovementFactor);
+            writer.Write(Configuration.ScaleFactor);
 
-            foreach (ScreensaverImageFolder folder in Folders)
+            writer.Write(Configuration.Folders.Count);
+
+            foreach (ScreensaverImageFolder folder in Configuration.Folders)
             {
                 writer.Write(folder.Path);
                 writer.Write(folder.Recursive);
@@ -80,6 +81,11 @@ namespace WpfKenBurns
                 throw new InvalidDataException("Unexpected file version " + revision);
             }
 
+            Configuration.Duration = reader.ReadSingle();
+            Configuration.FadeDuration = reader.ReadSingle();
+            Configuration.MovementFactor = reader.ReadSingle();
+            Configuration.ScaleFactor = reader.ReadSingle();
+
             int count = reader.ReadInt32();
 
             for (int i = 0; i < count; i++)
@@ -94,7 +100,12 @@ namespace WpfKenBurns
             reader.Close();
             fileStream.Close();
 
-            Folders = collection;
+            Configuration.Folders = collection;
+        }
+
+        public static void Reset()
+        {
+            Configuration = new Configuration();
         }
     }
 }

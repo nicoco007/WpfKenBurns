@@ -16,6 +16,8 @@
 
 using Ookii.Dialogs.Wpf;
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 
 namespace WpfKenBurns
@@ -28,6 +30,14 @@ namespace WpfKenBurns
         public ConfigurationWindow()
         {
             InitializeComponent();
+            DataContext = ConfigurationManager.Configuration;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public void OnPropertyChanged(object sender, string propertyName)
+        {
+            PropertyChanged?.Invoke(sender, new PropertyChangedEventArgs(propertyName));
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -38,10 +48,11 @@ namespace WpfKenBurns
             }
             catch (Exception ex)
             {
+                Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
                 MessageBox.Show("Failed to load configuration: " + ex.Message);
             }
 
-            foldersListView.ItemsSource = ConfigurationManager.Folders;
+            foldersListView.ItemsSource = ConfigurationManager.Configuration.Folders;
         }
 
         private void AddFolderButton_Click(object sender, RoutedEventArgs e)
@@ -52,7 +63,7 @@ namespace WpfKenBurns
 
                 if (dialog.ShowDialog() != true) return;
 
-                ConfigurationManager.Folders.Add(new ScreensaverImageFolder
+                ConfigurationManager.Configuration.Folders.Add(new ScreensaverImageFolder
                 {
                     Path = dialog.SelectedPath,
                     Recursive = false
@@ -60,21 +71,51 @@ namespace WpfKenBurns
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.StackTrace);
+                Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
+                MessageBox.Show("Failed to load folder browser");
             }
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            ConfigurationManager.Save();
-            Close();
+            try
+            {
+                ConfigurationManager.Save();
+                Close();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
+                MessageBox.Show("Failed to save configuration: " + ex.Message);
+            }
+        }
+
+        private void ResetButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult result = MessageBox.Show("Are you sure you want to reset all settings?", "Are you sure?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                ConfigurationManager.Reset();
+                DataContext = ConfigurationManager.Configuration;
+            }
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult result = MessageBox.Show("Are you sure you want to quit? Any changes will be lost.", "Are you sure?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                Close();
+            }
         }
 
         private void RemoveFolderButton_Click(object sender, RoutedEventArgs e)
         {
             if (foldersListView.SelectedIndex >= 0)
             {
-                ConfigurationManager.Folders.RemoveAt(foldersListView.SelectedIndex);
+                ConfigurationManager.Configuration.Folders.RemoveAt(foldersListView.SelectedIndex);
             }
         }
 

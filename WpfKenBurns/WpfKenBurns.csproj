@@ -82,10 +82,13 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Configuration.cs" />
     <Compile Include="ConfigurationManager.cs" />
     <Compile Include="ConfigurationWindow.xaml.cs">
       <DependentUpon>ConfigurationWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FloatToPercentConverter.cs" />
+    <Compile Include="FloatToSecondsConverter.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="ScreensaverImageFolder.cs" />
     <Compile Include="ScreensaverWindow.xaml.cs">

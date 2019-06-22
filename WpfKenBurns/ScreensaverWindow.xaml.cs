@@ -81,11 +81,21 @@ namespace WpfKenBurns
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            ConfigurationManager.Load();
+            Console.WriteLine("Window loaded");
+
+            try
+            {
+                ConfigurationManager.Load();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to load configuration: " + ex.Message);
+                Application.Current.Shutdown();
+            }
 
             files = new List<string>();
 
-            foreach (ScreensaverImageFolder folder in ConfigurationManager.Folders)
+            foreach (ScreensaverImageFolder folder in ConfigurationManager.Configuration.Folders)
             {
                 files.AddRange(Directory.GetFiles(folder.Path, "*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
             }
@@ -96,14 +106,14 @@ namespace WpfKenBurns
 
         private void KenBurns()
         {
-            double duration       = ConfigurationManager.Duration;
-            double movementFactor = ConfigurationManager.MovementFactor;
-            double scaleFactor    = ConfigurationManager.ScaleFactor;
-            double fadeDuration   = ConfigurationManager.FadeDuration;
+            double duration       = ConfigurationManager.Configuration.Duration;
+            double movementFactor = ConfigurationManager.Configuration.MovementFactor;
+            double scaleFactor    = ConfigurationManager.Configuration.ScaleFactor;
+            double fadeDuration   = ConfigurationManager.Configuration.FadeDuration;
             double totalDuration  = duration + fadeDuration * 2;
 
-            double maxDistanceX = Width * (movementFactor - 1);
-            double maxDistanceY = Height * (movementFactor - 1);
+            double maxDistanceX = Width * movementFactor;
+            double maxDistanceY = Height * movementFactor;
 
             Image image = new Image()
             {
@@ -129,14 +139,15 @@ namespace WpfKenBurns
             marginAnimation.From = new Thickness(p1.X + offset.X, p1.Y + offset.Y, 0, 0);
             marginAnimation.To = new Thickness(p2.X + offset.X, p2.Y + offset.Y, 0, 0);
 
-            double fromScale = 1 + (scaleFactor - 1) * random.NextDouble();
-            double toScale = 1 + (scaleFactor - 1) * random.NextDouble();
+            bool zoomDirection = random.Next(2) == 1;
+            double fromScale = 1 + (zoomDirection ? scaleFactor : 0);
+            double toScale = 1 + (zoomDirection ? 0 : scaleFactor);
 
-            widthAnimation.From = Width * movementFactor * fromScale;
-            widthAnimation.To = Width * movementFactor * toScale;
+            widthAnimation.From = Width * (movementFactor + 1) * fromScale;
+            widthAnimation.To = Width * (movementFactor + 1) * toScale;
 
-            heightAnimation.From = Height * movementFactor * fromScale;
-            heightAnimation.To = Height * movementFactor * toScale;
+            heightAnimation.From = Height * (movementFactor + 1) * fromScale;
+            heightAnimation.To = Height * (movementFactor + 1) * toScale;
 
             opacityAnimation.From = 0;
             opacityAnimation.To = 1;
