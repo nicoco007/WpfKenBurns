@@ -44,7 +44,7 @@ namespace WpfKenBurns
         public ScreensaverWindow(IntPtr previewHandle)
         {
             InitializeComponent();
-            
+
             IntPtr windowHandle = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
 
             // Set the preview window as the parent of this window
@@ -60,7 +60,7 @@ namespace WpfKenBurns
 
             Width = parentRect.Width;
             Height = parentRect.Height;
-            
+
             isPreviewWindow = true;
 
             targetWindowRect = parentRect;
@@ -104,19 +104,19 @@ namespace WpfKenBurns
             }
 
             UpdateCurrentImage();
-            KenBurns();
+            KenBurns(grid);
         }
 
-        private void KenBurns()
+        private void KenBurns(Panel container)
         {
             double duration       = ConfigurationManager.Configuration.Duration;
-            double movementFactor = ConfigurationManager.Configuration.MovementFactor;
-            double scaleFactor    = ConfigurationManager.Configuration.ScaleFactor;
+            double movementFactor = ConfigurationManager.Configuration.MovementFactor + 1;
+            double scaleFactor    = ConfigurationManager.Configuration.ScaleFactor + 1;
             double fadeDuration   = ConfigurationManager.Configuration.FadeDuration;
             double totalDuration  = duration + fadeDuration * 2;
 
-            double maxDistanceX = Width * movementFactor;
-            double maxDistanceY = Height * movementFactor;
+            double width = container.ActualWidth;
+            double height = container.ActualHeight;
 
             Image image = new Image()
             {
@@ -133,27 +133,23 @@ namespace WpfKenBurns
             DoubleAnimation heightAnimation = new DoubleAnimation();
             DoubleAnimation opacityAnimation = new DoubleAnimation();
 
-            double angle = random.NextDouble() * Math.PI * 2;
-
-            Point p1 = new Point(Math.Cos(angle) * maxDistanceX / 2, Math.Sin(angle) * maxDistanceY / 2);
-            Point p2 = new Point(-Math.Cos(angle) * maxDistanceX / 2, -Math.Sin(angle) * maxDistanceY / 2);
-
-            double scaleX = maxDistanceX / Math.Abs(p2.X - p1.X);
-            double scaleY = maxDistanceY / Math.Abs(p2.Y - p1.Y);
-            double scale = Math.Min(scaleX, scaleY);
-
-            marginAnimation.From = new Thickness(p1.X * scale - maxDistanceX / 2, p1.Y * scale - maxDistanceY / 2, 0, 0);
-            marginAnimation.To = new Thickness(p2.X * scale - maxDistanceX / 2, p2.Y * scale - maxDistanceY / 2, 0, 0);
-
             bool zoomDirection = random.Next(2) == 1;
             double fromScale = 1 + (zoomDirection ? scaleFactor : 0);
             double toScale = 1 + (zoomDirection ? 0 : scaleFactor);
 
-            widthAnimation.From = Width * (movementFactor + 1) * fromScale;
-            widthAnimation.To = Width * (movementFactor + 1) * toScale;
+            double angle = random.NextDouble() * Math.PI * 2;
 
-            heightAnimation.From = Height * (movementFactor + 1) * fromScale;
-            heightAnimation.To = Height * (movementFactor + 1) * toScale;
+            Point p1 = GetPointOnRectangleFromAngle(angle,           width * (movementFactor * fromScale - 1), height * (movementFactor * fromScale - 1));
+            Point p2 = GetPointOnRectangleFromAngle(angle + Math.PI, width * (movementFactor * toScale - 1),   height * (movementFactor * toScale - 1));
+
+            marginAnimation.From = new Thickness(p1.X, p1.Y, 0, 0);
+            marginAnimation.To = new Thickness(p2.X, p2.Y, 0, 0);
+
+            widthAnimation.From = width * movementFactor * fromScale;
+            widthAnimation.To = width * movementFactor * toScale;
+
+            heightAnimation.From = height * movementFactor * fromScale;
+            heightAnimation.To = height * movementFactor * toScale;
 
             opacityAnimation.From = 0;
             opacityAnimation.To = 1;
@@ -186,10 +182,10 @@ namespace WpfKenBurns
 
             storyboard.CurrentTimeInvalidated += (sender, args) =>
             {
-                if (!nextStarted && storyboard.GetCurrentTime() > TimeSpan.FromSeconds(duration + fadeDuration))
+                if (!nextStarted && storyboard.GetCurrentTime() >= TimeSpan.FromSeconds(duration + fadeDuration))
                 {
                     nextStarted = true;
-                    KenBurns();
+                    KenBurns(container);
                 }
             };
 
@@ -260,6 +256,24 @@ namespace WpfKenBurns
             if (isPreviewWindow) return;
 
             Application.Current.Shutdown();
+        }
+
+        private static double Clamp(double value, double min, double max)
+        {
+            if (value > max) return max;
+            if (value < min) return min;
+
+            return value;
+        }
+
+        private static Point GetPointOnRectangleFromAngle(double angle, double width, double height)
+        {
+            double max = Math.Sqrt(Math.Pow(width / 2, 2) + Math.Pow(height / 2, 2));
+
+            double x = Clamp(Math.Cos(angle) * max, -width / 2, width / 2);
+            double y = Clamp(Math.Sin(angle) * max, -height / 2, height / 2);
+
+            return new Point(x - width / 2, y - height / 2);
         }
     }
 }
