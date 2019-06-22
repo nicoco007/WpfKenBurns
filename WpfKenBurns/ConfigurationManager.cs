@@ -24,10 +24,10 @@ namespace WpfKenBurns
     public static class ConfigurationManager
     {
         public static ObservableCollection<ScreensaverImageFolder> Folders { get; set; } = new ObservableCollection<ScreensaverImageFolder>();
-        public static float Duration { get; set; } = 8;
-        public static float FadeDuration { get; set; } = 1;
+        public static float Duration { get; set; } = 7;
+        public static float FadeDuration { get; set; } = 1.5f;
         public static float ScaleFactor { get; set; } = 1.05f;
-        public static float MovementFactor { get; set; } = 1.02f;
+        public static float MovementFactor { get; set; } = 1.05f;
 
         private static readonly byte[] MAGIC = new byte[] { 0x54, 0x7d, 0x1d, 0x74 };
         private static readonly byte REVISION = 0;

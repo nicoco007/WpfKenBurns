@@ -34,9 +34,10 @@ namespace WpfKenBurns
         private BitmapImage currentImage = null;
         private Random random = new Random();
         private Point lastMousePosition = default;
-        private bool IsPreviewWindow { get; }
-        private List<string> Files { get; set; }
-        private RECT Monitor { get; set; }
+        private bool isPreviewWindow = false;
+        private List<string> files;
+        private RECT targetWindowRect = default;
+        private int lastFileIndex = -1;
 
         public ScreensaverWindow(IntPtr previewHandle)
         {
@@ -58,9 +59,9 @@ namespace WpfKenBurns
             Width = parentRect.Width;
             Height = parentRect.Height;
             
-            IsPreviewWindow = true;
+            isPreviewWindow = true;
 
-            Monitor = parentRect;
+            targetWindowRect = parentRect;
         }
 
         public ScreensaverWindow(RECT monitor)
@@ -75,18 +76,18 @@ namespace WpfKenBurns
             Width = monitor.Width;
             Height = monitor.Height;
 
-            Monitor = monitor;
+            targetWindowRect = monitor;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             ConfigurationManager.Load();
 
-            Files = new List<string>();
+            files = new List<string>();
 
             foreach (ScreensaverImageFolder folder in ConfigurationManager.Folders)
             {
-                Files.AddRange(Directory.GetFiles(folder.Path, "*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
+                files.AddRange(Directory.GetFiles(folder.Path, "*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
             }
 
             UpdateCurrentImage();
@@ -123,7 +124,7 @@ namespace WpfKenBurns
 
             Point p1 = new Point((Math.Cos(angle) - 1) * maxDistanceX / 2, (Math.Sin(angle) - 1) * maxDistanceY / 2);
             Point p2 = new Point((-Math.Cos(angle) - 1) * maxDistanceX / 2, (-Math.Sin(angle) - 1) * maxDistanceY / 2);
-            Point offset = new Point((maxDistanceX - Math.Abs(p2.X - p1.X)) * (random.NextDouble() * 2 - 1), (maxDistanceY - Math.Abs(p2.Y - p1.Y)) * (random.NextDouble() * 2 - 1));
+            Point offset = new Point((maxDistanceX - Math.Abs(p2.X - p1.X)) * (random.NextDouble() - 0.5), (maxDistanceY - Math.Abs(p2.Y - p1.Y)) * (random.NextDouble() - 0.5));
 
             marginAnimation.From = new Thickness(p1.X + offset.X, p1.Y + offset.Y, 0, 0);
             marginAnimation.To = new Thickness(p2.X + offset.X, p2.Y + offset.Y, 0, 0);
@@ -170,8 +171,8 @@ namespace WpfKenBurns
             {
                 if (!nextStarted && storyboard.GetCurrentTime() >= TimeSpan.FromSeconds(duration - fadeDuration))
                 {
-                    KenBurns();
                     nextStarted = true;
+                    KenBurns();
                 }
             };
 
@@ -182,44 +183,48 @@ namespace WpfKenBurns
 
             storyboard.Begin();
 
-            UpdateCurrentImage();
+            new System.Threading.Thread(UpdateCurrentImage).Start();
         }
 
         public void UpdateCurrentImage()
         {
-            if (Files.Count == 0) return;
+            if (files.Count == 0) return;
 
-            string file;
+            int fileIndex;
 
             do
             {
-                file = Files[random.Next(Files.Count)];
-            } while (false);
+                fileIndex = random.Next(files.Count);
+            } while (fileIndex == lastFileIndex);
 
-            FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read);
+            lastFileIndex = fileIndex;
+
+            FileStream fileStream = new FileStream(files[fileIndex], FileMode.Open, FileAccess.Read);
 
             currentImage = new BitmapImage();
 
             currentImage.BeginInit();
             currentImage.CacheOption = BitmapCacheOption.OnLoad;
             currentImage.CreateOptions = BitmapCreateOptions.None;
-            currentImage.DecodePixelWidth = Monitor.Width;
+            currentImage.DecodePixelWidth = targetWindowRect.Width;
             currentImage.StreamSource = fileStream;
             currentImage.EndInit();
+
+            currentImage.Freeze();
 
             fileStream.Dispose();
         }
 
         private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
-            if (IsPreviewWindow) return;
+            if (isPreviewWindow) return;
 
             Application.Current.Shutdown();
         }
 
         private void Window_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if (IsPreviewWindow) return;
+            if (isPreviewWindow) return;
 
             Point pos = e.GetPosition(this);
 
@@ -233,7 +238,7 @@ namespace WpfKenBurns
 
         private void Window_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (IsPreviewWindow) return;
+            if (isPreviewWindow) return;
 
             Application.Current.Shutdown();
         }

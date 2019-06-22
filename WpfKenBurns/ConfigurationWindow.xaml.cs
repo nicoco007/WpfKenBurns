@@ -38,7 +38,7 @@ namespace WpfKenBurns
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Failed to load configuration.");
+                MessageBox.Show("Failed to load configuration: " + ex.Message);
             }
 
             foldersListView.ItemsSource = ConfigurationManager.Folders;
