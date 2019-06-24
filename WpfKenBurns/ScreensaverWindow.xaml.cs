@@ -134,8 +134,8 @@ namespace WpfKenBurns
             DoubleAnimation opacityAnimation = new DoubleAnimation();
 
             bool zoomDirection = random.Next(2) == 1;
-            double fromScale = 1 + (zoomDirection ? scaleFactor : 0);
-            double toScale = 1 + (zoomDirection ? 0 : scaleFactor);
+            double fromScale = (zoomDirection ? scaleFactor : 1);
+            double toScale = (zoomDirection ? 1 : scaleFactor);
 
             double angle = random.NextDouble() * Math.PI * 2;
 
@@ -219,7 +219,6 @@ namespace WpfKenBurns
             image.BeginInit();
             image.CacheOption = BitmapCacheOption.OnLoad;
             image.CreateOptions = BitmapCreateOptions.None;
-            image.DecodePixelWidth = targetWindowRect.Width;
             image.StreamSource = fileStream;
             image.EndInit();
 
