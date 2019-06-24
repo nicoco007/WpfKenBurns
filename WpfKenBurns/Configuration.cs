@@ -74,6 +74,15 @@ namespace WpfKenBurns
         private float movementFactor = 0.05f;
         private float scaleFactor = 0.05f;
 
+        public void CopyFrom(Configuration other)
+        {
+            Folders = other.Folders;
+            Duration = other.Duration;
+            FadeDuration = other.FadeDuration;
+            MovementFactor = other.MovementFactor;
+            ScaleFactor = other.ScaleFactor;
+        }
+
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

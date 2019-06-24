@@ -59,7 +59,7 @@ namespace WpfKenBurns
 
         public static void Load()
         {
-            ObservableCollection<ScreensaverImageFolder> collection = new ObservableCollection<ScreensaverImageFolder>();
+            Configuration configuration = new Configuration();
 
             if (!Directory.Exists(CONFIGURATION_FOLDER)) Directory.CreateDirectory(CONFIGURATION_FOLDER);
 
@@ -81,16 +81,16 @@ namespace WpfKenBurns
                 throw new InvalidDataException("Unexpected file version " + revision);
             }
 
-            Configuration.Duration = reader.ReadSingle();
-            Configuration.FadeDuration = reader.ReadSingle();
-            Configuration.MovementFactor = reader.ReadSingle();
-            Configuration.ScaleFactor = reader.ReadSingle();
+            configuration.Duration = reader.ReadSingle();
+            configuration.FadeDuration = reader.ReadSingle();
+            configuration.MovementFactor = reader.ReadSingle();
+            configuration.ScaleFactor = reader.ReadSingle();
 
             int count = reader.ReadInt32();
 
             for (int i = 0; i < count; i++)
             {
-                collection.Add(new ScreensaverImageFolder
+                configuration.Folders.Add(new ScreensaverImageFolder
                 {
                     Path = reader.ReadString(),
                     Recursive = reader.ReadBoolean()
@@ -100,7 +100,7 @@ namespace WpfKenBurns
             reader.Close();
             fileStream.Close();
 
-            Configuration.Folders = collection;
+            Configuration.CopyFrom(configuration);
         }
 
         public static void Reset()
