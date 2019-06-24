@@ -120,6 +120,8 @@ namespace WpfKenBurns
                 Source = currentImage
             };
 
+            RenderOptions.SetBitmapScalingMode(image, ConfigurationManager.Configuration.Quality);
+
             grid.Children.Add(image);
 
             ThicknessAnimation marginAnimation = new ThicknessAnimation();
@@ -230,9 +232,14 @@ namespace WpfKenBurns
 
             Point pos = e.GetPosition(this);
 
-            if (lastMousePosition != default && (Math.Abs(lastMousePosition.X - pos.X) > 5 || Math.Abs(lastMousePosition.Y - pos.Y) > 5))
+            if (lastMousePosition != default)
             {
-                Application.Current.Shutdown();
+                int mouseSensitivity = 10 - ConfigurationManager.Configuration.MouseSensitivity;
+
+                if ((lastMousePosition - pos).Length > mouseSensitivity * 2)
+                {
+                    Application.Current.Shutdown();
+                }
             }
 
             lastMousePosition = pos;

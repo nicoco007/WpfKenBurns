@@ -17,6 +17,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Media;
 
 namespace WpfKenBurns
 {
@@ -82,6 +83,30 @@ namespace WpfKenBurns
             }
         }
 
+        public byte MouseSensitivity
+        {
+            get => mouseSensitivity;
+            set
+            {
+                if (mouseSensitivity == value) return;
+
+                mouseSensitivity = Clamp(value, 0, 10);
+                NotifyPropertyChanged();
+            }
+        }
+
+        public BitmapScalingMode Quality
+        {
+            get => quality;
+            set
+            {
+                if (quality == value) return;
+
+                quality = value;
+                NotifyPropertyChanged();
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private ObservableCollection<ScreensaverImageFolder> folders = new ObservableCollection<ScreensaverImageFolder>();
@@ -89,19 +114,31 @@ namespace WpfKenBurns
         private float fadeDuration = 1.5f;
         private float movementFactor = 0.05f;
         private float scaleFactor = 0.05f;
+        private byte mouseSensitivity = 8;
+        private BitmapScalingMode quality = BitmapScalingMode.HighQuality;
 
         public void CopyFrom(Configuration other)
         {
-            Folders = other.Folders;
-            Duration = other.Duration;
-            FadeDuration = other.FadeDuration;
-            MovementFactor = other.MovementFactor;
-            ScaleFactor = other.ScaleFactor;
+            Folders          = other.Folders;
+            Duration         = other.Duration;
+            FadeDuration     = other.FadeDuration;
+            MovementFactor   = other.MovementFactor;
+            ScaleFactor      = other.ScaleFactor;
+            MouseSensitivity = other.MouseSensitivity;
+            Quality          = other.Quality;
         }
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private static byte Clamp(byte value, byte min, byte max)
+        {
+            if (value > max) return max;
+            if (value < min) return min;
+
+            return value;
         }
 
         private static float Clamp(float value, float min, float max)

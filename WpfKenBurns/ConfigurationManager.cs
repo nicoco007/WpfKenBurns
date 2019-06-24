@@ -17,6 +17,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Windows.Media;
 
 namespace WpfKenBurns
 {
@@ -43,6 +44,8 @@ namespace WpfKenBurns
             writer.Write(Configuration.FadeDuration);
             writer.Write(Configuration.MovementFactor);
             writer.Write(Configuration.ScaleFactor);
+            writer.Write(Configuration.MouseSensitivity);
+            writer.Write((byte)Configuration.Quality);
 
             writer.Write(Configuration.Folders.Count);
 
@@ -84,6 +87,8 @@ namespace WpfKenBurns
             configuration.FadeDuration = reader.ReadSingle();
             configuration.MovementFactor = reader.ReadSingle();
             configuration.ScaleFactor = reader.ReadSingle();
+            configuration.MouseSensitivity = reader.ReadByte();
+            configuration.Quality = (BitmapScalingMode)reader.ReadByte();
 
             int count = reader.ReadInt32();
 

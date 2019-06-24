@@ -5,13 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfKenBurns"
         mc:Ignorable="d"
-        Title="ConfigurationWindow" Height="450" Width="600" Loaded="Window_Loaded">
+        Title="Ken Burns Screensaver Configuration" MinWidth="600" MinHeight="400" Width="600" Height="400" Loaded="Window_Loaded">
     <Window.Resources>
         <local:FloatToSecondsConverter x:Key="FloatToSecondsConverter"/>
         <local:FloatToPercentConverter x:Key="FloatToPercentConverter"/>
+        <local:BitmapScalingModeToString x:Key="BitmapScalingModeToString"/>
     </Window.Resources>
     <Grid>
-        <ListView x:Name="foldersListView" Height="200" Margin="10,10,10,0" VerticalAlignment="Top" SelectionMode="Single" SelectionChanged="FoldersListView_SelectionChanged">
+        <ListView x:Name="foldersListView" Margin="10,10,10,260" SelectionMode="Single" SelectionChanged="FoldersListView_SelectionChanged">
             <ListView.View>
                 <GridView x:Name="gridView">
                     <GridViewColumn Header="Path" Width="475">
@@ -33,55 +34,90 @@
             </ListView.View>
         </ListView>
 
-        <Button Content="Add Folder..." HorizontalAlignment="Left" Margin="10,215,0,0" VerticalAlignment="Top" Width="75" Click="AddFolderButton_Click"/>
-        <Button x:Name="removeSelectedFolderButton" Content="Remove Selected Folder" HorizontalAlignment="Left" Margin="90,215,0,0" VerticalAlignment="Top" Width="140" Click="RemoveFolderButton_Click" IsEnabled="False"/>
+        <Button Content="Add Folder..." HorizontalAlignment="Left" Margin="10,0,0,235" VerticalAlignment="Bottom" Width="75" Click="AddFolderButton_Click"/>
+        <Button x:Name="removeSelectedFolderButton" Content="Remove Selected Folder" HorizontalAlignment="Left" Margin="90,0,0,235" VerticalAlignment="Bottom" Width="140" Click="RemoveFolderButton_Click" IsEnabled="False"/>
 
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,260,5,0">
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,190">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Duration" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0"/>
+            <TextBlock Text="Duration" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0" ToolTip="How long the image is displayed, excluding fading time."/>
             <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding Duration}" Minimum="1" Maximum="15" TickPlacement="BottomRight" SmallChange="0.5"/>
             <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding Duration, Converter={StaticResource FloatToSecondsConverter}}" Margin="5,0" Grid.Column="2"/>
         </Grid>
 
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,289,5,0">
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,160">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Fade Duration" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0"/>
+            <TextBlock Text="Fade Duration" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0" ToolTip="How long fading lasts."/>
             <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding FadeDuration}" Minimum="0.5" Maximum="5" TickPlacement="BottomRight" LargeChange="0.5" TickFrequency="0.5" SmallChange="0.5"/>
             <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding FadeDuration, Converter={StaticResource FloatToSecondsConverter}}" Margin="5,0" Grid.Column="2"/>
         </Grid>
 
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,318,5,0">
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,130">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Movement Scale" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0"/>
+            <TextBlock Text="Panning Scale" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0" ToolTip="How much the image should move as a percentage of screen size."/>
             <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding MovementFactor}" Minimum="0" Maximum="0.5" LargeChange="0.1" SmallChange="0.01" TickPlacement="BottomRight" TickFrequency="0.1"/>
             <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding MovementFactor, Converter={StaticResource FloatToPercentConverter}}" Margin="5,0" Grid.Column="2"/>
         </Grid>
 
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,347,5,0">
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,100">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Zoom" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0"/>
+            <TextBlock Text="Zoom" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0" ToolTip="How much the image should zoom in on itself while panning."/>
             <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding ScaleFactor}" Minimum="0" Maximum="0.5" LargeChange="0.1" SmallChange="0.01" TickPlacement="BottomRight" TickFrequency="0.1"/>
             <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding ScaleFactor, Converter={StaticResource FloatToPercentConverter}}" Margin="5,0" Grid.Column="2"/>
+        </Grid>
+
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,70">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Mouse Sensitivity" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0" ToolTip="How fast the mouse needs to be moved before the screensaver is closed."/>
+            <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding MouseSensitivity}" Minimum="0" Maximum="10" LargeChange="2" SmallChange="1" TickPlacement="BottomRight" TickFrequency="1"/>
+            <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding MouseSensitivity}" Margin="5,0" Grid.Column="2"/>
+        </Grid>
+
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,40">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="Scaling Quality" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5,0" ToolTip="Image quality. Lower values may help if experiencing lag." />
+            <ComboBox HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,0" Width="100" SelectedItem="{Binding Quality}" Grid.Column="1">
+                <ComboBox.ItemsSource>
+                    <x:Array Type="BitmapScalingMode">
+                        <BitmapScalingMode>NearestNeighbor</BitmapScalingMode>
+                        <BitmapScalingMode>LowQuality</BitmapScalingMode>
+                        <BitmapScalingMode>HighQuality</BitmapScalingMode>
+                    </x:Array>
+                </ComboBox.ItemsSource>
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource BitmapScalingModeToString}}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
         </Grid>
 
         <Button Content="Reset" HorizontalAlignment="Right" Margin="0,0,180,10" VerticalAlignment="Bottom" Width="75" Click="ResetButton_Click"/>
