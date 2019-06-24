@@ -90,6 +90,7 @@
     <Compile Include="FloatToPercentConverter.cs" />
     <Compile Include="FloatToSecondsConverter.cs" />
     <Compile Include="NativeMethods.cs" />
+    <Compile Include="RandomizedIterator.cs" />
     <Compile Include="ScreensaverImageFolder.cs" />
     <Compile Include="ScreensaverWindow.xaml.cs">
       <DependentUpon>ScreensaverWindow.xaml</DependentUpon>
@@ -128,7 +129,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>move "$(TargetPath)" "$(TargetDir)Ken Burns.scr"</PostBuildEvent>
+    <PostBuildEvent>copy "$(TargetPath)" "$(TargetDir)Ken Burns.scr"</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Fody.5.0.6\build\Fody.targets" Condition="Exists('..\packages\Fody.5.0.6\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

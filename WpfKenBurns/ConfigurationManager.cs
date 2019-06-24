@@ -15,7 +15,6 @@
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 
@@ -105,7 +104,7 @@ namespace WpfKenBurns
 
         public static void Reset()
         {
-            Configuration = new Configuration();
+            Configuration.CopyFrom(new Configuration());
         }
     }
 }

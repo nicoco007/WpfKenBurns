@@ -37,9 +37,7 @@ namespace WpfKenBurns
         private Random random = new Random();
         private Point lastMousePosition = default;
         private bool isPreviewWindow = false;
-        private List<string> files;
-        private RECT targetWindowRect = default;
-        private int lastFileIndex = -1;
+        private RandomizedIterator<string> fileEnumerator;
 
         public ScreensaverWindow(IntPtr previewHandle)
         {
@@ -62,8 +60,6 @@ namespace WpfKenBurns
             Height = parentRect.Height;
 
             isPreviewWindow = true;
-
-            targetWindowRect = parentRect;
         }
 
         public ScreensaverWindow(RECT monitor)
@@ -77,14 +73,10 @@ namespace WpfKenBurns
             Left = monitor.Left;
             Width = monitor.Width;
             Height = monitor.Height;
-
-            targetWindowRect = monitor;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("Window loaded");
-
             try
             {
                 ConfigurationManager.Load();
@@ -96,12 +88,14 @@ namespace WpfKenBurns
                 Application.Current.Shutdown();
             }
 
-            files = new List<string>();
+            List<string> files = new List<string>();
 
             foreach (ScreensaverImageFolder folder in ConfigurationManager.Configuration.Folders)
             {
                 files.AddRange(Directory.GetFiles(folder.Path, "*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
             }
+
+            fileEnumerator = new RandomizedIterator<string>(files);
 
             UpdateCurrentImage();
             KenBurns(grid);
@@ -201,18 +195,12 @@ namespace WpfKenBurns
 
         public void UpdateCurrentImage()
         {
-            if (files.Count == 0) return;
+            if (fileEnumerator.Current == default) fileEnumerator.Reset();
 
-            int fileIndex;
+            if (!fileEnumerator.MoveNext()) return;
 
-            do
-            {
-                fileIndex = random.Next(files.Count);
-            } while (fileIndex == lastFileIndex);
-
-            lastFileIndex = fileIndex;
-
-            FileStream fileStream = new FileStream(files[fileIndex], FileMode.Open, FileAccess.Read);
+            string fileName = fileEnumerator.Current;
+            FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
 
             BitmapImage image = new BitmapImage();
 
