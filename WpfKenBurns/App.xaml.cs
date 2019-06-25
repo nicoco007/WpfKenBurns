@@ -62,12 +62,9 @@ namespace WpfKenBurns
 
         private void ShowScreensaver()
         {
-            NativeMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData) =>
-            {
-                ScreensaverWindow window = new ScreensaverWindow(lprcMonitor);
-                window.Show();
-                return true;
-            }, IntPtr.Zero);
+            WindowSynchronizer sync = new WindowSynchronizer();
+
+            sync.Start();
         }
 
         private void ShowPreviewWindow(IntPtr handle)
