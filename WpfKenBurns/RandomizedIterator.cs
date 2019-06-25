@@ -40,11 +40,11 @@ namespace WpfKenBurns
 
         public bool MoveNext()
         {
-            if (items.Length == 0 || currentIndex >= items.Length) return false;
+            if (items.Length == 0) return false;
 
             currentIndex++;
 
-            return true;
+            return currentIndex < items.Length;
         }
 
         public void Reset()
@@ -55,7 +55,7 @@ namespace WpfKenBurns
 
         private void Shuffle()
         {
-            if (items.Length == 0) return;
+            if (items.Length == 1) return;
 
             Random random = new Random();
 
