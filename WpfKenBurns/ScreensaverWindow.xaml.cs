@@ -197,11 +197,16 @@ namespace WpfKenBurns
 
         public void UpdateCurrentImage()
         {
-            if (fileEnumerator.Current == default) fileEnumerator.Reset();
-
-            if (!fileEnumerator.MoveNext()) return;
+            if (!fileEnumerator.MoveNext())
+            {
+                fileEnumerator.Reset();
+                fileEnumerator.MoveNext();
+            }
 
             string fileName = fileEnumerator.Current;
+
+            if (fileName == default) return;
+
             FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
 
             BitmapImage image = new BitmapImage();

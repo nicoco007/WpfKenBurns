@@ -55,7 +55,7 @@ namespace WpfKenBurns
 
         private void Shuffle()
         {
-            if (items.Length == 1) return;
+            if (items.Length <= 1) return;
 
             Random random = new Random();
 
