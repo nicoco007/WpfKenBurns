@@ -37,7 +37,7 @@ namespace WpfKenBurns
         private Random random = new Random();
         private Point lastMousePosition = default;
         private bool isPreviewWindow = false;
-        private RandomizedIterator<string> fileEnumerator;
+        private RandomizedEnumerator<string> fileEnumerator;
 
         public ScreensaverWindow(IntPtr previewHandle)
         {
@@ -95,7 +95,7 @@ namespace WpfKenBurns
                 files.AddRange(Directory.GetFiles(folder.Path, "*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
             }
 
-            fileEnumerator = new RandomizedIterator<string>(files);
+            fileEnumerator = new RandomizedEnumerator<string>(files);
 
             UpdateCurrentImage();
             KenBurns(grid);

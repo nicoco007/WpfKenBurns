@@ -91,7 +91,7 @@
     <Compile Include="FloatToPercentConverter.cs" />
     <Compile Include="FloatToSecondsConverter.cs" />
     <Compile Include="NativeMethods.cs" />
-    <Compile Include="RandomizedIterator.cs" />
+    <Compile Include="RandomizedEnumerator.cs" />
     <Compile Include="ScreensaverImageFolder.cs" />
     <Compile Include="ScreensaverWindow.xaml.cs">
       <DependentUpon>ScreensaverWindow.xaml</DependentUpon>

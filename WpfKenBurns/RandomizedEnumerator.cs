@@ -21,12 +21,12 @@ using System.Linq;
 
 namespace WpfKenBurns
 {
-    class RandomizedIterator<T> : IEnumerator<T>
+    class RandomizedEnumerator<T> : IEnumerator<T>
     {
         private T[] items;
         private int currentIndex = -1;
 
-        public RandomizedIterator(IEnumerable<T> items)
+        public RandomizedEnumerator(IEnumerable<T> items)
         {
             this.items = items.ToArray();
             Shuffle();
