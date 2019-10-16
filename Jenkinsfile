@@ -1,5 +1,9 @@
 pipeline {
-  agent any
+  agent {
+    node {
+      label 'windows && vs-15'
+    }
+  }
   stages {
     stage('') {
       steps {
