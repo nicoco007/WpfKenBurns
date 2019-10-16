@@ -15,19 +15,15 @@
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
 using System;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 
 namespace WpfKenBurns
 {
-    /// <summary>
-    /// Logique d'interaction pour MainWindow.xaml
-    /// </summary>
     public partial class ScreensaverWindow : Window
     {
         private Point lastMousePosition = default;
@@ -61,7 +57,7 @@ namespace WpfKenBurns
             InitializeComponent();
 
             Topmost = true;
-            Cursor = null;
+            Cursor = Cursors.None;
 
             Top = monitor.Top;
             Left = monitor.Left;
@@ -113,7 +109,7 @@ namespace WpfKenBurns
             lastMousePosition = pos;
         }
 
-        private void Window_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (isPreviewWindow) return;
 
