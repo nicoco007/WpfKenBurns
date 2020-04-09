@@ -16,7 +16,6 @@
 
 using Ookii.Dialogs.Wpf;
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 
@@ -27,17 +26,20 @@ namespace WpfKenBurns
     /// </summary>
     public partial class ConfigurationWindow : Window
     {
+        private Configuration configuration;
+        private bool changed;
+
         public ConfigurationWindow()
         {
             InitializeComponent();
-            DataContext = ConfigurationManager.Configuration;
+            UpdateConfiguration(ConfigurationManager.Load());
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged(object sender, string propertyName)
+        private void UpdateConfiguration(Configuration config)
         {
-            PropertyChanged?.Invoke(sender, new PropertyChangedEventArgs(propertyName));
+            configuration = config;
+            DataContext = config;
+            config.PropertyChanged += (sender, args) => changed = true;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -52,7 +54,7 @@ namespace WpfKenBurns
                 MessageBox.Show("Failed to load configuration: " + ex.Message);
             }
 
-            foldersListView.ItemsSource = ConfigurationManager.Configuration.Folders;
+            foldersListView.ItemsSource = configuration.Folders;
         }
 
         private void AddFolderButton_Click(object sender, RoutedEventArgs e)
@@ -63,7 +65,7 @@ namespace WpfKenBurns
 
                 if (dialog.ShowDialog() != true) return;
 
-                ConfigurationManager.Configuration.Folders.Add(new ScreensaverImageFolder
+                configuration.Folders.Add(new ScreensaverImageFolder
                 {
                     Path = dialog.SelectedPath,
                     Recursive = false
@@ -80,7 +82,7 @@ namespace WpfKenBurns
         {
             try
             {
-                ConfigurationManager.Save();
+                ConfigurationManager.Save(configuration);
                 Close();
             }
             catch (Exception ex)
@@ -96,26 +98,28 @@ namespace WpfKenBurns
 
             if (result == MessageBoxResult.Yes)
             {
-                ConfigurationManager.Reset();
-                DataContext = ConfigurationManager.Configuration;
+                UpdateConfiguration(new Configuration());
+                changed = true;
             }
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            MessageBoxResult result = MessageBox.Show("Are you sure you want to quit? Any changes will be lost.", "Are you sure?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
-
-            if (result == MessageBoxResult.Yes)
+            if (changed)
             {
-                Close();
+                MessageBoxResult result = MessageBox.Show("Are you sure you want to quit? Any changes will be lost.", "Are you sure?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+
+                if (result != MessageBoxResult.Yes) return;
             }
+
+            Close();
         }
 
         private void RemoveFolderButton_Click(object sender, RoutedEventArgs e)
         {
             if (foldersListView.SelectedIndex >= 0)
             {
-                ConfigurationManager.Configuration.Folders.RemoveAt(foldersListView.SelectedIndex);
+                configuration.Folders.RemoveAt(foldersListView.SelectedIndex);
             }
         }
 

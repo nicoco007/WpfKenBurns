@@ -33,7 +33,8 @@ namespace WpfKenBurns
 
                 if (mode.StartsWith("/s"))
                 {
-                    ShowScreensaver();
+                    WindowSynchronizer sync = new WindowSynchronizer();
+                    sync.Start();
                     return;
                 }
                 else if (mode.StartsWith("/p"))
@@ -49,32 +50,15 @@ namespace WpfKenBurns
                         strHandle = e.Args[0].Split(':').ElementAtOrDefault(1);
                     }
 
-                    if (int.TryParse(strHandle, out var intHandle))
+                    if (int.TryParse(strHandle, out int intHandle))
                     {
-                        ShowPreviewWindow(new IntPtr(intHandle));
+                        WindowSynchronizer sync = new WindowSynchronizer(new IntPtr(intHandle));
+                        sync.Start();
                         return;
                     }
                 }
             }
 
-            ShowConfigurationWindow();
-        }
-
-        private void ShowScreensaver()
-        {
-            WindowSynchronizer sync = new WindowSynchronizer();
-
-            sync.Start();
-        }
-
-        private void ShowPreviewWindow(IntPtr handle)
-        {
-            WindowSynchronizer sync = new WindowSynchronizer(handle);
-            sync.Start();
-        }
-
-        private void ShowConfigurationWindow()
-        {
             ConfigurationWindow window = new ConfigurationWindow();
             window.Show();
         }

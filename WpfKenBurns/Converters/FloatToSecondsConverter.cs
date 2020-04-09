@@ -19,7 +19,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace WpfKenBurns
+namespace WpfKenBurns.Converters
 {
     class FloatToSecondsConverter : IValueConverter
     {

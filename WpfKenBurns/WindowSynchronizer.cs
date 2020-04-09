@@ -29,6 +29,7 @@ namespace WpfKenBurns
 {
     public class WindowSynchronizer
     {
+        private Configuration configuration;
         private List<ScreensaverWindow> windows = new List<ScreensaverWindow>();
         private Random random = new Random();
         private bool running = false;
@@ -37,9 +38,12 @@ namespace WpfKenBurns
 
         private RandomizedEnumerator<string> fileEnumerator;
 
-        public WindowSynchronizer() { }
+        public WindowSynchronizer()
+        {
+            configuration = ConfigurationManager.Load();;
+        }
 
-        public WindowSynchronizer(IntPtr handle)
+        public WindowSynchronizer(IntPtr handle) : this()
         {
             this.handle = handle;
         }
@@ -61,7 +65,7 @@ namespace WpfKenBurns
 
             List<string> files = new List<string>();
 
-            foreach (ScreensaverImageFolder folder in ConfigurationManager.Configuration.Folders)
+            foreach (ScreensaverImageFolder folder in configuration.Folders)
             {
                 files.AddRange(Directory.GetFiles(folder.Path, "*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
             }
@@ -70,7 +74,7 @@ namespace WpfKenBurns
 
             if (handle != IntPtr.Zero)
             {
-                ScreensaverWindow window = new ScreensaverWindow(handle);
+                ScreensaverWindow window = new ScreensaverWindow(configuration, handle);
                 window.Show();
                 windows.Add(window);
             }
@@ -78,7 +82,7 @@ namespace WpfKenBurns
             {
                 NativeMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData) =>
                 {
-                    ScreensaverWindow window = new ScreensaverWindow(lprcMonitor);
+                    ScreensaverWindow window = new ScreensaverWindow(configuration, lprcMonitor);
                     window.Show();
                     windows.Add(window);
                     return true;
@@ -170,10 +174,10 @@ namespace WpfKenBurns
 
         private Storyboard SetupAnimation(Panel container, Image image, ManualResetEventSlim resetEvent)
         {
-            double duration = ConfigurationManager.Configuration.Duration;
-            double movementFactor = ConfigurationManager.Configuration.MovementFactor + 1;
-            double scaleFactor = ConfigurationManager.Configuration.ScaleFactor + 1;
-            double fadeDuration = ConfigurationManager.Configuration.FadeDuration;
+            double duration = configuration.Duration;
+            double movementFactor = configuration.MovementFactor + 1;
+            double scaleFactor = configuration.ScaleFactor + 1;
+            double fadeDuration = configuration.FadeDuration;
             double totalDuration = duration + fadeDuration * 2;
 
             double width = container.ActualWidth;

@@ -26,13 +26,18 @@ namespace WpfKenBurns
 {
     public partial class ScreensaverWindow : Window
     {
+        private Configuration configuration;
         private Point lastMousePosition = default;
         private bool isPreviewWindow = false;
 
-        public ScreensaverWindow(IntPtr previewHandle)
+        private ScreensaverWindow(Configuration config)
         {
             InitializeComponent();
+            configuration = config;
+        }
 
+        public ScreensaverWindow(Configuration config, IntPtr previewHandle) : this(config)
+        {
             IntPtr windowHandle = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
 
             // Set the preview window as the parent of this window
@@ -52,10 +57,8 @@ namespace WpfKenBurns
             isPreviewWindow = true;
         }
 
-        public ScreensaverWindow(RECT monitor)
+        public ScreensaverWindow(Configuration config, RECT monitor) : this(config)
         {
-            InitializeComponent();
-
             Topmost = true;
             Cursor = Cursors.None;
 
@@ -76,21 +79,21 @@ namespace WpfKenBurns
                 Opacity = 0
             };
 
-            RenderOptions.SetBitmapScalingMode(image, ConfigurationManager.Configuration.Quality);
+            RenderOptions.SetBitmapScalingMode(image, configuration.Quality);
 
             grid.Children.Add(image);
 
             return image;
         }
 
-        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (isPreviewWindow) return;
 
             Application.Current.Shutdown();
         }
 
-        private void Window_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        private void Window_MouseMove(object sender, MouseEventArgs e)
         {
             if (isPreviewWindow) return;
 
@@ -98,7 +101,7 @@ namespace WpfKenBurns
 
             if (lastMousePosition != default)
             {
-                int mouseSensitivity = 10 - ConfigurationManager.Configuration.MouseSensitivity;
+                int mouseSensitivity = 10 - configuration.MouseSensitivity;
 
                 if ((lastMousePosition - pos).Length > mouseSensitivity * 2)
                 {

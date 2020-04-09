@@ -23,33 +23,31 @@ namespace WpfKenBurns
 {
     public static class ConfigurationManager
     {
-        public static Configuration Configuration { get; set; } = new Configuration();
+        private static readonly byte[] Magic = { 0x54, 0x7d, 0x1d, 0x74 };
+        private static readonly byte Revision = 0;
+        private static readonly string ConfigurationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WpfKenBurns");
+        private static readonly string ConfigurationFile = Path.Combine(ConfigurationFolder, "config");
 
-        private static readonly byte[] MAGIC = new byte[] { 0x54, 0x7d, 0x1d, 0x74 };
-        private static readonly byte REVISION = 0;
-        private static readonly string CONFIGURATION_FOLDER = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WpfKenBurns");
-        private static readonly string CONFIGURATION_FILE = Path.Combine(CONFIGURATION_FOLDER, "config");
-
-        public static void Save()
+        public static void Save(Configuration configuration)
         {
-            if (!Directory.Exists(CONFIGURATION_FOLDER)) Directory.CreateDirectory(CONFIGURATION_FOLDER);
+            if (!Directory.Exists(ConfigurationFolder)) Directory.CreateDirectory(ConfigurationFolder);
 
-            FileStream fileStream = new FileStream(CONFIGURATION_FILE, FileMode.Create, FileAccess.Write);
+            FileStream fileStream = new FileStream(ConfigurationFile, FileMode.Create, FileAccess.Write);
             BinaryWriter writer = new BinaryWriter(fileStream);
 
-            writer.Write(MAGIC);
-            writer.Write(REVISION);
+            writer.Write(Magic);
+            writer.Write(Revision);
 
-            writer.Write(Configuration.Duration);
-            writer.Write(Configuration.FadeDuration);
-            writer.Write(Configuration.MovementFactor);
-            writer.Write(Configuration.ScaleFactor);
-            writer.Write(Configuration.MouseSensitivity);
-            writer.Write((byte)Configuration.Quality);
+            writer.Write(configuration.Duration);
+            writer.Write(configuration.FadeDuration);
+            writer.Write(configuration.MovementFactor);
+            writer.Write(configuration.ScaleFactor);
+            writer.Write(configuration.MouseSensitivity);
+            writer.Write((byte)configuration.Quality);
 
-            writer.Write(Configuration.Folders.Count);
+            writer.Write(configuration.Folders.Count);
 
-            foreach (ScreensaverImageFolder folder in Configuration.Folders)
+            foreach (ScreensaverImageFolder folder in configuration.Folders)
             {
                 writer.Write(folder.Path);
                 writer.Write(folder.Recursive);
@@ -59,26 +57,26 @@ namespace WpfKenBurns
             fileStream.Close();
         }
 
-        public static void Load()
+        public static Configuration Load()
         {
             Configuration configuration = new Configuration();
 
-            if (!Directory.Exists(CONFIGURATION_FOLDER)) Directory.CreateDirectory(CONFIGURATION_FOLDER);
+            if (!Directory.Exists(ConfigurationFolder)) Directory.CreateDirectory(ConfigurationFolder);
 
-            FileStream fileStream = new FileStream(CONFIGURATION_FILE, FileMode.OpenOrCreate, FileAccess.Read);
+            FileStream fileStream = new FileStream(ConfigurationFile, FileMode.OpenOrCreate, FileAccess.Read);
 
-            if (fileStream.Length == 0) return;
+            if (fileStream.Length == 0) return configuration;
 
             BinaryReader reader = new BinaryReader(fileStream);
 
-            if (!reader.ReadBytes(MAGIC.Length).SequenceEqual(MAGIC))
+            if (!reader.ReadBytes(Magic.Length).SequenceEqual(Magic))
             {
                 throw new InvalidDataException("Unknown file format");
             }
 
             byte revision = reader.ReadByte();
 
-            if (revision != REVISION)
+            if (revision != Revision)
             {
                 throw new InvalidDataException("Unexpected file version " + revision);
             }
@@ -104,12 +102,7 @@ namespace WpfKenBurns
             reader.Close();
             fileStream.Close();
 
-            Configuration.CopyFrom(configuration);
-        }
-
-        public static void Reset()
-        {
-            Configuration.CopyFrom(new Configuration());
+            return configuration;
         }
     }
 }

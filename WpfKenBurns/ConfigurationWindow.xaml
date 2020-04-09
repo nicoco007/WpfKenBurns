@@ -3,13 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WpfKenBurns"
+        xmlns:converters="clr-namespace:WpfKenBurns.Converters"
         mc:Ignorable="d"
         Title="Ken Burns Screensaver Configuration" MinWidth="600" MinHeight="400" Width="600" Height="400" Loaded="Window_Loaded">
     <Window.Resources>
-        <local:FloatToSecondsConverter x:Key="FloatToSecondsConverter"/>
-        <local:FloatToPercentConverter x:Key="FloatToPercentConverter"/>
-        <local:BitmapScalingModeToString x:Key="BitmapScalingModeToString"/>
+        <converters:FloatToSecondsConverter x:Key="FloatToSecondsConverter"/>
+        <converters:FloatToPercentConverter x:Key="FloatToPercentConverter"/>
+        <converters:BitmapScalingModeToStringConverter x:Key="BitmapScalingModeToString"/>
     </Window.Resources>
     <Grid>
         <ListView x:Name="foldersListView" Margin="10,10,10,260" SelectionMode="Single" SelectionChanged="FoldersListView_SelectionChanged">

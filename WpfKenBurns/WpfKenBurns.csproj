@@ -83,14 +83,14 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="BitmapScalingModeToString.cs" />
+    <Compile Include="Converters\BitmapScalingModeToStringConverter.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="ConfigurationManager.cs" />
     <Compile Include="ConfigurationWindow.xaml.cs">
       <DependentUpon>ConfigurationWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="FloatToPercentConverter.cs" />
-    <Compile Include="FloatToSecondsConverter.cs" />
+    <Compile Include="Converters\FloatToPercentConverter.cs" />
+    <Compile Include="Converters\FloatToSecondsConverter.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="RandomizedEnumerator.cs" />
     <Compile Include="ScreensaverImageFolder.cs" />
@@ -129,6 +129,7 @@
   <ItemGroup>
     <Resource Include="FodyWeavers.xml" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy "$(TargetPath)" "$(TargetDir)Ken Burns.scr"

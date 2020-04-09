@@ -16,26 +16,33 @@
 
 using System;
 using System.Globalization;
-using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
-namespace WpfKenBurns
+namespace WpfKenBurns.Converters
 {
-    class FloatToPercentConverter : IValueConverter
+    public class BitmapScalingModeToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return ((float)value * 100).ToString("0") + "%";
+            switch ((BitmapScalingMode)value)
+            {
+                case BitmapScalingMode.Unspecified:
+                    return "Default";
+                case BitmapScalingMode.NearestNeighbor:
+                    return "Low";
+                case BitmapScalingMode.LowQuality:
+                    return "Medium";
+                case BitmapScalingMode.HighQuality:
+                    return "High";
+            }
+
+            return "Unknown";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (float.TryParse(value as string, out var result))
-            {
-                return result / 100;
-            }
-
-            return DependencyProperty.UnsetValue;
+            throw new NotImplementedException();
         }
     }
 }
