@@ -18,12 +18,15 @@ namespace WpfKenBurns
         private Random random = new Random();
         private bool running = false;
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        private IntPtr handle;
 
         private RandomizedEnumerator<string> fileEnumerator;
 
-        public WindowSynchronizer()
-        {
+        public WindowSynchronizer() { }
 
+        public WindowSynchronizer(IntPtr handle)
+        {
+            this.handle = handle;
         }
 
         public void Start()
@@ -50,13 +53,22 @@ namespace WpfKenBurns
 
             fileEnumerator = new RandomizedEnumerator<string>(files);
 
-            NativeMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData) =>
+            if (handle != IntPtr.Zero)
             {
-                ScreensaverWindow window = new ScreensaverWindow(lprcMonitor);
+                ScreensaverWindow window = new ScreensaverWindow(handle);
                 window.Show();
                 windows.Add(window);
-                return true;
-            }, IntPtr.Zero);
+            }
+            else
+            {
+                NativeMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData) =>
+                {
+                    ScreensaverWindow window = new ScreensaverWindow(lprcMonitor);
+                    window.Show();
+                    windows.Add(window);
+                    return true;
+                }, IntPtr.Zero);
+            }
 
             Application.Current.Exit += (sender, e) =>
             {

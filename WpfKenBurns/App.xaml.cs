@@ -69,8 +69,8 @@ namespace WpfKenBurns
 
         private void ShowPreviewWindow(IntPtr handle)
         {
-            ScreensaverWindow window = new ScreensaverWindow(handle);
-            window.Show();
+            WindowSynchronizer sync = new WindowSynchronizer(handle);
+            sync.Start();
         }
 
         private void ShowConfigurationWindow()

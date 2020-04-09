@@ -131,7 +131,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetPath)" "$(TargetDir)Ken Burns.scr"</PostBuildEvent>
+    <PostBuildEvent>copy "$(TargetPath)" "$(TargetDir)Ken Burns.scr"
+copy "$(TargetPath)" "C:\Windows\SysWOW64\Ken Burns.scr"</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Fody.5.0.6\build\Fody.targets" Condition="Exists('..\packages\Fody.5.0.6\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
