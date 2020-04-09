@@ -1,5 +1,5 @@
 ﻿// WpfKenBurns - A simple Ken Burns-style screensaver
-// Copyright © 2019 Nicolas Gnyra
+// Copyright © 2019-2020 Nicolas Gnyra
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
