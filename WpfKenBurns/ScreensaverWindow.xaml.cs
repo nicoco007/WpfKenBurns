@@ -15,6 +15,7 @@
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -26,6 +27,9 @@ namespace WpfKenBurns
 {
     public partial class ScreensaverWindow : Window
     {
+        public event Action DisplayChanged;
+
+        private IntPtr windowHandle;
         private Configuration configuration;
         private Point lastMousePosition = default;
         private bool isPreviewWindow = false;
@@ -34,12 +38,15 @@ namespace WpfKenBurns
         {
             InitializeComponent();
             configuration = config;
+            windowHandle = new WindowInteropHelper(this).EnsureHandle();
+
+            HwndSource source = HwndSource.FromHwnd(windowHandle);
+
+            source.AddHook(WndProc);
         }
 
         public ScreensaverWindow(Configuration config, IntPtr previewHandle) : this(config)
         {
-            IntPtr windowHandle = new WindowInteropHelper(GetWindow(this)).EnsureHandle();
-
             // Set the preview window as the parent of this window
             NativeMethods.SetParent(windowHandle, previewHandle);
 
@@ -84,6 +91,16 @@ namespace WpfKenBurns
             grid.Children.Add(image);
 
             return image;
+        }
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == 0x007e) // WM_DISPLAYCHANGE
+            {
+                DisplayChanged?.Invoke();
+            }
+
+            return IntPtr.Zero;
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e)

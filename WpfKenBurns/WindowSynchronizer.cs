@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
@@ -33,14 +34,16 @@ namespace WpfKenBurns
         private List<ScreensaverWindow> windows = new List<ScreensaverWindow>();
         private Random random = new Random();
         private bool running = false;
-        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource cancellationTokenSource;
+        private Task task;
         private IntPtr handle;
+        private bool resetting = false;
 
         private RandomizedEnumerator<string> fileEnumerator;
 
         public WindowSynchronizer()
         {
-            configuration = ConfigurationManager.Load();;
+            configuration = ConfigurationManager.Load();
         }
 
         public WindowSynchronizer(IntPtr handle) : this()
@@ -72,32 +75,65 @@ namespace WpfKenBurns
 
             fileEnumerator = new RandomizedEnumerator<string>(files);
 
+
             if (handle != IntPtr.Zero)
             {
                 ScreensaverWindow window = new ScreensaverWindow(configuration, handle);
                 window.Show();
                 windows.Add(window);
+                RestartTask();
             }
             else
             {
-                NativeMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData) =>
-                {
-                    ScreensaverWindow window = new ScreensaverWindow(configuration, lprcMonitor);
-                    window.Show();
-                    windows.Add(window);
-                    return true;
-                }, IntPtr.Zero);
+                EnumerateMonitors();
             }
 
             Application.Current.Exit += (sender, e) =>
             {
-                cancellationTokenSource.Cancel(false);
+                cancellationTokenSource?.Cancel();
                 running = false;
             };
+        }
 
+        private void EnumerateMonitors()
+        {
+            if (resetting) return;
+
+            resetting = true;
+
+            foreach (Window window in windows)
+            {
+                window.Close();
+            }
+
+            windows.Clear();
+
+            NativeMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData) =>
+            {
+                ScreensaverWindow window = new ScreensaverWindow(configuration, lprcMonitor);
+                window.Show();
+                windows.Add(window);
+                window.DisplayChanged += OnDisplayChanged;
+                return true;
+            }, IntPtr.Zero);
+
+            RestartTask();
+
+            resetting = false;
+        }
+
+        private void OnDisplayChanged()
+        {
+            EnumerateMonitors();
+        }
+
+        private void RestartTask()
+        {
+            cancellationTokenSource?.Cancel();
+            task?.Wait();
+            cancellationTokenSource = new CancellationTokenSource();
+            task = Task.Run(Worker);
             running = true;
-
-            new Thread(Worker).Start();
         }
 
         private void Worker()
