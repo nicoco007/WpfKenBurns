@@ -141,14 +141,18 @@ namespace WpfKenBurns
             ManualResetEventSlim[] previousResetEvents = new ManualResetEventSlim[windows.Count];
             Dispatcher uiDispatcher = Application.Current.Dispatcher;
 
-            if (uiDispatcher == null) return;
+            if (uiDispatcher == null)
+            {
+                Debug.WriteLine("UI dispatcher does not exist!");
+                return;
+            }
 
             try
             {
                 while (!cancellationTokenSource.IsCancellationRequested)
                 {
-                    Storyboard[] storyboards = new Storyboard[windows.Count];
-                    ManualResetEventSlim[] resetEvents = new ManualResetEventSlim[windows.Count];
+                    var storyboards = new Storyboard[windows.Count];
+                    var resetEvents = new ManualResetEventSlim[windows.Count];
 
                     for (int i = 0; i < windows.Count; i++)
                     {
@@ -157,16 +161,14 @@ namespace WpfKenBurns
 
                         Panel container = (Panel)image.Parent;
 
-                        ManualResetEventSlim resetEvent = new ManualResetEventSlim(false);
+                        var resetEvent = new ManualResetEventSlim(false);
                         storyboards[i] = SetupAnimation(container, image, resetEvent);
                         resetEvents[i] = resetEvent;
-
-                        if (cancellationTokenSource.IsCancellationRequested) return;
                     }
 
-                    for (int i = 0; i < previousResetEvents.Length; i++)
+                    foreach (var previousResetEvent in previousResetEvents)
                     {
-                        previousResetEvents[i]?.Wait(cancellationTokenSource.Token);
+                        previousResetEvent?.Wait(cancellationTokenSource.Token);
                     }
 
                     for (int i = 0; i < storyboards.Length; i++)
