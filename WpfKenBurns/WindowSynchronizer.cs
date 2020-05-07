@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -86,6 +85,7 @@ namespace WpfKenBurns
             }
             else
             {
+                Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
                 EnumerateMonitors();
             }
 
@@ -157,13 +157,18 @@ namespace WpfKenBurns
 
                     for (int i = 0; i < windows.Count; i++)
                     {
+                        ScreensaverWindow window = windows[i];
                         BitmapImage source = GetImage();
-                        Image image = uiDispatcher.Invoke(() => windows[i].CreateImage(source));
 
-                        Panel container = (Panel)image.Parent;
+                        double scale = Math.Max(window.ActualWidth / source.PixelWidth, window.ActualHeight / source.PixelHeight);
+                        Size size = new Size(source.PixelWidth * scale, source.PixelHeight * scale);
+
+                        Image image = uiDispatcher.Invoke(() => window.CreateImage(source, size));
+
+                        Panel container = (Panel) image.Parent;
 
                         var resetEvent = new ManualResetEventSlim(false);
-                        storyboards[i] = SetupAnimation(container, image, resetEvent);
+                        storyboards[i] = SetupAnimation(container, image, size, resetEvent);
                         resetEvents[i] = resetEvent;
                     }
 
@@ -175,11 +180,18 @@ namespace WpfKenBurns
                     for (int i = 0; i < storyboards.Length; i++)
                     {
                         previousResetEvents[i] = resetEvents[i];
-                        Application.Current.Dispatcher.Invoke(() => storyboards[i].Begin());
+
+                        Storyboard storyboard = storyboards[i];
+                        Application.Current.Dispatcher.Invoke(() => storyboard.Begin());
                     }
                 }
             }
             catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                Application.Current.Shutdown();
+            }
         }
 
         private BitmapImage GetImage()
@@ -211,7 +223,7 @@ namespace WpfKenBurns
             return image;
         }
 
-        private Storyboard SetupAnimation(Panel container, Image image, ManualResetEventSlim resetEvent)
+        private Storyboard SetupAnimation(Panel container, Image image, Size imageSize, ManualResetEventSlim resetEvent)
         {
             double duration = configuration.Duration;
             double movementFactor = configuration.MovementFactor + 1;
@@ -236,14 +248,20 @@ namespace WpfKenBurns
             Point p1 = GetPointOnRectangleFromAngle(angle, width * (movementFactor * fromScale - 1), height * (movementFactor * fromScale - 1));
             Point p2 = GetPointOnRectangleFromAngle(angle + Math.PI, width * (movementFactor * toScale - 1), height * (movementFactor * toScale - 1));
 
+            // center image if its proportions aren't identical to the screen's
+            p1.X -= (imageSize.Width - width) / 2;
+            p1.Y -= (imageSize.Height - height) / 2;
+            p2.X -= (imageSize.Width - width) / 2;
+            p2.Y -= (imageSize.Height - height) / 2;
+
             marginAnimation.From = new Thickness(p1.X, p1.Y, 0, 0);
             marginAnimation.To = new Thickness(p2.X, p2.Y, 0, 0);
 
-            widthAnimation.From = width * movementFactor * fromScale;
-            widthAnimation.To = width * movementFactor * toScale;
+            widthAnimation.From = imageSize.Width * movementFactor * fromScale;
+            widthAnimation.To = imageSize.Width * movementFactor * toScale;
 
-            heightAnimation.From = height * movementFactor * fromScale;
-            heightAnimation.To = height * movementFactor * toScale;
+            heightAnimation.From = imageSize.Height * movementFactor * fromScale;
+            heightAnimation.To = imageSize.Height * movementFactor * toScale;
 
             opacityAnimation.From = 0;
             opacityAnimation.To = 1;

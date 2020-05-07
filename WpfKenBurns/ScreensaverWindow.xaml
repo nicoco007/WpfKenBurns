@@ -6,5 +6,5 @@
         xmlns:local="clr-namespace:WpfKenBurns"
         mc:Ignorable="d"
         Title="Screensaver" Top="0" Left="0" Height="450" Width="800" WindowStyle="None" KeyDown="Window_KeyDown" Background="Black" MouseMove="Window_MouseMove" MouseDown="Window_MouseDown" WindowStartupLocation="Manual" ShowInTaskbar="False" ResizeMode="NoResize" AllowsTransparency="False">
-    <Grid Name="grid" />
+    <Grid Name="grid"></Grid>
 </Window>

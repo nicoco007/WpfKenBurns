@@ -56,7 +56,7 @@ namespace WpfKenBurns
             // Place our window inside the parent
             RECT parentRect;
             NativeMethods.GetClientRect(previewHandle, out parentRect);
-            
+
             NativeMethods.SetWindowPos(windowHandle, IntPtr.Zero, 0, 0, parentRect.Width, parentRect.Height, SetWindowPosFlags.ShowWindow);
 
             isPreviewWindow = true;
@@ -66,19 +66,21 @@ namespace WpfKenBurns
         {
             Topmost = true;
             Cursor = Cursors.None;
-            
+
             NativeMethods.SetWindowPos(windowHandle, IntPtr.Zero, monitor.X, monitor.Y, monitor.Width, monitor.Height, SetWindowPosFlags.ShowWindow);
         }
 
-        public Image CreateImage(BitmapImage source)
+        public Image CreateImage(BitmapImage source, Size size)
         {
-            Image image = new Image()
+            Image image = new Image
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top,
                 Stretch = Stretch.UniformToFill,
                 Source = source,
-                Opacity = 0
+                Opacity = 0,
+                Width = size.Width,
+                Height = size.Height
             };
 
             RenderOptions.SetBitmapScalingMode(image, configuration.Quality);
