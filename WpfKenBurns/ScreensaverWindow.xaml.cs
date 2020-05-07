@@ -15,7 +15,6 @@
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
 using System;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -57,9 +56,8 @@ namespace WpfKenBurns
             // Place our window inside the parent
             RECT parentRect;
             NativeMethods.GetClientRect(previewHandle, out parentRect);
-
-            Width = parentRect.Width;
-            Height = parentRect.Height;
+            
+            NativeMethods.SetWindowPos(windowHandle, IntPtr.Zero, 0, 0, parentRect.Width, parentRect.Height, SetWindowPosFlags.ShowWindow);
 
             isPreviewWindow = true;
         }
@@ -68,11 +66,8 @@ namespace WpfKenBurns
         {
             Topmost = true;
             Cursor = Cursors.None;
-
-            Top = monitor.Top;
-            Left = monitor.Left;
-            Width = monitor.Width;
-            Height = monitor.Height;
+            
+            NativeMethods.SetWindowPos(windowHandle, IntPtr.Zero, monitor.X, monitor.Y, monitor.Width, monitor.Height, SetWindowPosFlags.ShowWindow);
         }
 
         public Image CreateImage(BitmapImage source)

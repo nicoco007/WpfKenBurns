@@ -117,49 +117,65 @@ namespace WpfKenBurns
         }
     }
 
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    internal struct MonitorInfoEx
+    [Flags]
+    internal enum SetWindowPosFlags : uint
     {
-        /// <summary>
-        /// The size, in bytes, of the structure. Set this member to sizeof(MONITORINFOEX) (72) before calling the GetMonitorInfo function.
-        /// Doing so lets the function determine the type of structure you are passing to it.
-        /// </summary>
-        public int Size;
-
-        /// <summary>
-        /// A RECT structure that specifies the display monitor rectangle, expressed in virtual-screen coordinates.
-        /// Note that if the monitor is not the primary display monitor, some of the rectangle's coordinates may be negative values.
-        /// </summary>
-        public RECT Monitor;
-
-        /// <summary>
-        /// A RECT structure that specifies the work area rectangle of the display monitor that can be used by applications,
-        /// expressed in virtual-screen coordinates. Windows uses this rectangle to maximize an application on the monitor.
-        /// The rest of the area in rcMonitor contains system windows such as the task bar and side bars.
-        /// Note that if the monitor is not the primary display monitor, some of the rectangle's coordinates may be negative values.
-        /// </summary>
-        public RECT WorkArea;
-
-        /// <summary>
-        /// The attributes of the display monitor.
-        ///
-        /// This member can be the following value:
-        ///   1 : MONITORINFOF_PRIMARY
-        /// </summary>
-        public uint Flags;
-
-        /// <summary>
-        /// A string that specifies the device name of the monitor being used. Most applications have no use for a display monitor name,
-        /// and so can save some bytes by using a MONITORINFO structure.
-        /// </summary>
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        public string DeviceName;
-
-        public void Init()
-        {
-            this.Size = 40 + 2 * 32;
-            this.DeviceName = string.Empty;
-        }
+        /// <summary>If the calling thread and the thread that owns the window are attached to different input queues,
+        /// the system posts the request to the thread that owns the window. This prevents the calling thread from
+        /// blocking its execution while other threads process the request.</summary>
+        /// <remarks>SWP_ASYNCWINDOWPOS</remarks>
+        AsynchronousWindowPosition = 0x4000,
+        /// <summary>Prevents generation of the WM_SYNCPAINT message.</summary>
+        /// <remarks>SWP_DEFERERASE</remarks>
+        DeferErase = 0x2000,
+        /// <summary>Draws a frame (defined in the window's class description) around the window.</summary>
+        /// <remarks>SWP_DRAWFRAME</remarks>
+        DrawFrame = 0x0020,
+        /// <summary>Applies new frame styles set using the SetWindowLong function. Sends a WM_NCCALCSIZE message to
+        /// the window, even if the window's size is not being changed. If this flag is not specified, WM_NCCALCSIZE
+        /// is sent only when the window's size is being changed.</summary>
+        /// <remarks>SWP_FRAMECHANGED</remarks>
+        FrameChanged = 0x0020,
+        /// <summary>Hides the window.</summary>
+        /// <remarks>SWP_HIDEWINDOW</remarks>
+        HideWindow = 0x0080,
+        /// <summary>Does not activate the window. If this flag is not set, the window is activated and moved to the
+        /// top of either the topmost or non-topmost group (depending on the setting of the hWndInsertAfter
+        /// parameter).</summary>
+        /// <remarks>SWP_NOACTIVATE</remarks>
+        DoNotActivate = 0x0010,
+        /// <summary>Discards the entire contents of the client area. If this flag is not specified, the valid
+        /// contents of the client area are saved and copied back into the client area after the window is sized or
+        /// repositioned.</summary>
+        /// <remarks>SWP_NOCOPYBITS</remarks>
+        DoNotCopyBits = 0x0100,
+        /// <summary>Retains the current position (ignores X and Y parameters).</summary>
+        /// <remarks>SWP_NOMOVE</remarks>
+        IgnoreMove = 0x0002,
+        /// <summary>Does not change the owner window's position in the Z order.</summary>
+        /// <remarks>SWP_NOOWNERZORDER</remarks>
+        DoNotChangeOwnerZOrder = 0x0200,
+        /// <summary>Does not redraw changes. If this flag is set, no repainting of any kind occurs. This applies to
+        /// the client area, the nonclient area (including the title bar and scroll bars), and any part of the parent
+        /// window uncovered as a result of the window being moved. When this flag is set, the application must
+        /// explicitly invalidate or redraw any parts of the window and parent window that need redrawing.</summary>
+        /// <remarks>SWP_NOREDRAW</remarks>
+        DoNotRedraw = 0x0008,
+        /// <summary>Same as the SWP_NOOWNERZORDER flag.</summary>
+        /// <remarks>SWP_NOREPOSITION</remarks>
+        DoNotReposition = 0x0200,
+        /// <summary>Prevents the window from receiving the WM_WINDOWPOSCHANGING message.</summary>
+        /// <remarks>SWP_NOSENDCHANGING</remarks>
+        DoNotSendChangingEvent = 0x0400,
+        /// <summary>Retains the current size (ignores the cx and cy parameters).</summary>
+        /// <remarks>SWP_NOSIZE</remarks>
+        IgnoreResize = 0x0001,
+        /// <summary>Retains the current Z order (ignores the hWndInsertAfter parameter).</summary>
+        /// <remarks>SWP_NOZORDER</remarks>
+        IgnoreZOrder = 0x0004,
+        /// <summary>Displays the window.</summary>
+        /// <remarks>SWP_SHOWWINDOW</remarks>
+        ShowWindow = 0x0040,
     }
 
     class NativeMethods
@@ -170,16 +186,13 @@ namespace WpfKenBurns
         [DllImport("user32.dll")]
         internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
         [DllImport("user32.dll")]
         internal static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
 
         [DllImport("user32.dll")]
         internal static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, EnumMonitorsDelegate lpfnEnum, IntPtr dwData);
 
-        [DllImport("user32.dll")]
-        internal static extern bool GetMonitorInfo(IntPtr hMonitor, ref MonitorInfoEx lpmi);
+        [DllImport("user32.dll", SetLastError=true)]
+        internal static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowPosFlags uFlags);
     }
 }
