@@ -1,0 +1,28 @@
+name: build
+
+on: [ push ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.0.5
+
+    - name: Restore packages
+      run: nuget restore WpfKenBurns.sln
+
+    - name: Build
+      run: msbuild /p:Configuration=Release
+
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2.2.1
+      with:
+        name: WpfKenBurns
+        path: WpfKenBurns/bin/Release/net472/Ken Burns.scr
