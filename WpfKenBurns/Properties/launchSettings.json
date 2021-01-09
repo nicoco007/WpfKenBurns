@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "WpfKenBurns (configure)": {
+      "commandName": "Project"
+    },
+    "WpfKenBurns (run)": {
+      "commandName": "Project",
+      "commandLineArgs": "/s"
+    }
+  }
+}

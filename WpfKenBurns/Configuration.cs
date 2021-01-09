@@ -14,8 +14,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
 
@@ -23,6 +26,12 @@ namespace WpfKenBurns
 {
     public class Configuration : INotifyPropertyChanged
     {
+
+        private static readonly byte[] Magic = { 0x54, 0x7d, 0x1d, 0x74 };
+        private static readonly byte Revision = 1;
+        private static readonly string ConfigurationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WpfKenBurns");
+        private static readonly string ConfigurationFile = Path.Combine(ConfigurationFolder, "config");
+
         public ObservableCollection<ScreensaverImageFolder> Folders
         {
             get => folders;
@@ -107,6 +116,18 @@ namespace WpfKenBurns
             }
         }
 
+        public ObservableCollection<string> ProgramDenylist
+        {
+            get => programDenylist;
+            set
+            {
+                if (programDenylist == value) return;
+
+                programDenylist = value;
+                NotifyPropertyChanged();
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private ObservableCollection<ScreensaverImageFolder> folders = new ObservableCollection<ScreensaverImageFolder>();
@@ -116,6 +137,98 @@ namespace WpfKenBurns
         private float scaleFactor = 0.05f;
         private byte mouseSensitivity = 8;
         private BitmapScalingMode quality = BitmapScalingMode.HighQuality;
+        private ObservableCollection<string> programDenylist = new ObservableCollection<string>();
+
+        public static void Save(Configuration configuration)
+        {
+            if (!Directory.Exists(ConfigurationFolder)) Directory.CreateDirectory(ConfigurationFolder);
+
+            FileStream fileStream = new FileStream(ConfigurationFile, FileMode.Create, FileAccess.Write);
+            BinaryWriter writer = new BinaryWriter(fileStream);
+
+            writer.Write(Magic);
+            writer.Write(Revision);
+
+            writer.Write(configuration.Duration);
+            writer.Write(configuration.FadeDuration);
+            writer.Write(configuration.MovementFactor);
+            writer.Write(configuration.ScaleFactor);
+            writer.Write(configuration.MouseSensitivity);
+            writer.Write((byte)configuration.Quality);
+
+            writer.Write(configuration.Folders.Count);
+
+            foreach (ScreensaverImageFolder folder in configuration.Folders)
+            {
+                writer.Write(folder.Path);
+                writer.Write(folder.Recursive);
+            }
+
+            writer.Write(configuration.ProgramDenylist.Count);
+
+            foreach (string filePath in configuration.ProgramDenylist)
+            {
+                writer.Write(filePath);
+            }
+
+            writer.Close();
+            fileStream.Close();
+        }
+
+        public static Configuration Load()
+        {
+            Configuration configuration = new Configuration();
+
+            if (!Directory.Exists(ConfigurationFolder)) Directory.CreateDirectory(ConfigurationFolder);
+
+            FileStream fileStream = new FileStream(ConfigurationFile, FileMode.OpenOrCreate, FileAccess.Read);
+
+            if (fileStream.Length == 0) return configuration;
+
+            BinaryReader reader = new BinaryReader(fileStream);
+
+            if (!reader.ReadBytes(Magic.Length).SequenceEqual(Magic))
+            {
+                throw new InvalidDataException("Unknown file format");
+            }
+
+            byte revision = reader.ReadByte();
+
+            if (revision != Revision)
+            {
+                throw new InvalidDataException("Unexpected file version " + revision);
+            }
+
+            configuration.Duration = reader.ReadSingle();
+            configuration.FadeDuration = reader.ReadSingle();
+            configuration.MovementFactor = reader.ReadSingle();
+            configuration.ScaleFactor = reader.ReadSingle();
+            configuration.MouseSensitivity = reader.ReadByte();
+            configuration.Quality = (BitmapScalingMode)reader.ReadByte();
+
+            int count = reader.ReadInt32();
+
+            for (int i = 0; i < count; i++)
+            {
+                configuration.Folders.Add(new ScreensaverImageFolder
+                {
+                    Path = reader.ReadString(),
+                    Recursive = reader.ReadBoolean()
+                });
+            }
+
+            count = reader.ReadInt32();
+
+            for (int i = 0; i < count; i++)
+            {
+                configuration.ProgramDenylist.Add(reader.ReadString());
+            }
+
+            reader.Close();
+            fileStream.Close();
+
+            return configuration;
+        }
 
         public void CopyFrom(Configuration other)
         {
@@ -126,6 +239,7 @@ namespace WpfKenBurns
             ScaleFactor      = other.ScaleFactor;
             MouseSensitivity = other.MouseSensitivity;
             Quality          = other.Quality;
+            ProgramDenylist = other.ProgramDenylist;
         }
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")

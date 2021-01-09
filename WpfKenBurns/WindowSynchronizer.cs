@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -41,10 +42,7 @@ namespace WpfKenBurns
 
         private RandomizedEnumerator<string> fileEnumerator;
 
-        public WindowSynchronizer()
-        {
-            configuration = ConfigurationManager.Load();
-        }
+        public WindowSynchronizer() { }
 
         public WindowSynchronizer(IntPtr handle) : this()
         {
@@ -57,13 +55,25 @@ namespace WpfKenBurns
 
             try
             {
-                ConfigurationManager.Load();
+                configuration = Configuration.Load();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
                 MessageBox.Show("Failed to load configuration: " + ex.Message);
                 Application.Current.Shutdown();
+            }
+
+            foreach (string filePath in configuration.ProgramDenylist)
+            {
+                string fullPath = Path.GetFullPath(filePath);
+                Process[] processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(filePath));
+
+                if (processes.Any(p => Path.GetFullPath(p.MainModule.FileName) == fullPath))
+                {
+                    Application.Current.Shutdown();
+                    return;
+                }
             }
 
             List<string> files = new List<string>();

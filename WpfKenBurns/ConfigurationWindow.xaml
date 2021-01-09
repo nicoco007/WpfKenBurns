@@ -5,16 +5,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converters="clr-namespace:WpfKenBurns.Converters"
         mc:Ignorable="d"
-        Title="Ken Burns Screensaver Configuration" MinWidth="600" MinHeight="400" Width="600" Height="400" Loaded="Window_Loaded">
+        Title="Ken Burns Screensaver Configuration" MinWidth="600" MinHeight="400" Width="600" Height="650.408" Loaded="Window_Loaded">
     <Window.Resources>
         <converters:FloatToSecondsConverter x:Key="FloatToSecondsConverter"/>
         <converters:FloatToPercentConverter x:Key="FloatToPercentConverter"/>
         <converters:BitmapScalingModeToStringConverter x:Key="BitmapScalingModeToString"/>
     </Window.Resources>
     <Grid>
-        <ListView x:Name="foldersListView" Margin="10,10,10,260" SelectionMode="Single" SelectionChanged="FoldersListView_SelectionChanged">
+        <TextBlock Margin="10,10,0,0" Text="Image Sources" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <ListView x:Name="imageSourcesListView" Margin="10,31,10,404" SelectionMode="Single" SelectionChanged="FoldersListView_SelectionChanged" ItemsSource="{Binding Folders}">
             <ListView.View>
-                <GridView x:Name="gridView">
+                <GridView>
                     <GridViewColumn Header="Path" Width="475">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
@@ -34,8 +35,25 @@
             </ListView.View>
         </ListView>
 
-        <Button Content="Add Folder..." HorizontalAlignment="Left" Margin="10,0,0,235" VerticalAlignment="Bottom" Width="75" Click="AddFolderButton_Click"/>
-        <Button x:Name="removeSelectedFolderButton" Content="Remove Selected Folder" HorizontalAlignment="Left" Margin="90,0,0,235" VerticalAlignment="Bottom" Width="140" Click="RemoveFolderButton_Click" IsEnabled="False"/>
+        <Button Content="Add Folder..." HorizontalAlignment="Left" Margin="10,0,0,379" VerticalAlignment="Bottom" Width="75" Click="AddFolderButton_Click"/>
+        <Button x:Name="removeSelectedFolderButton" Content="Remove Selected Folder" HorizontalAlignment="Left" Margin="90,0,0,379" VerticalAlignment="Bottom" Width="140" Click="RemoveFolderButton_Click" IsEnabled="False"/>
+
+        <TextBlock Margin="10,0,0,347" HorizontalAlignment="Left" VerticalAlignment="Bottom" Text="Program Denylist"/>
+        <ListView x:Name="programDenylistListView" Margin="10,0,10,259" SelectionMode="Single" SelectionChanged="ProgramDenylistListView_SelectionChanged" Height="83" VerticalAlignment="Bottom" ItemsSource="{Binding ProgramDenylist}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Path" Width="500">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Button Content="Add File..." HorizontalAlignment="Left" Margin="10,0,0,234" VerticalAlignment="Bottom" Width="75" Click="AddFileButton_Click"/>
+        <Button x:Name="removeSelectedFileButton" Content="Remove Selected File" HorizontalAlignment="Left" Margin="90,0,0,234" VerticalAlignment="Bottom" Width="140" Click="RemoveFileButton_Click" IsEnabled="False"/>
 
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,190">
             <Grid.ColumnDefinitions>

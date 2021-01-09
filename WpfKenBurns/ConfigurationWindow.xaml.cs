@@ -32,7 +32,6 @@ namespace WpfKenBurns
         public ConfigurationWindow()
         {
             InitializeComponent();
-            UpdateConfiguration(ConfigurationManager.Load());
         }
 
         private void UpdateConfiguration(Configuration config)
@@ -46,15 +45,14 @@ namespace WpfKenBurns
         {
             try
             {
-                ConfigurationManager.Load();
+                UpdateConfiguration(Configuration.Load());
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
                 MessageBox.Show("Failed to load configuration: " + ex.Message);
+                UpdateConfiguration(new Configuration());
             }
-
-            foldersListView.ItemsSource = configuration.Folders;
         }
 
         private void AddFolderButton_Click(object sender, RoutedEventArgs e)
@@ -82,7 +80,7 @@ namespace WpfKenBurns
         {
             try
             {
-                ConfigurationManager.Save(configuration);
+                Configuration.Save(configuration);
                 Close();
             }
             catch (Exception ex)
@@ -117,15 +115,47 @@ namespace WpfKenBurns
 
         private void RemoveFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            if (foldersListView.SelectedIndex >= 0)
+            if (imageSourcesListView.SelectedIndex >= 0)
             {
-                configuration.Folders.RemoveAt(foldersListView.SelectedIndex);
+                configuration.Folders.RemoveAt(imageSourcesListView.SelectedIndex);
             }
         }
 
         private void FoldersListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            removeSelectedFolderButton.IsEnabled = foldersListView.SelectedIndex != -1;
+            removeSelectedFolderButton.IsEnabled = e.AddedItems.Count > 0;
+        }
+
+        private void AddFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                VistaOpenFileDialog dialog = new VistaOpenFileDialog();
+
+                dialog.Filter = "Executable Files (*.exe)|*.exe";
+
+                if (dialog.ShowDialog() != true) return;
+
+                configuration.ProgramDenylist.Add(dialog.FileName);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
+                MessageBox.Show("Failed to load folder browser");
+            }
+        }
+
+        private void RemoveFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (programDenylistListView.SelectedIndex >= 0)
+            {
+                configuration.ProgramDenylist.RemoveAt(programDenylistListView.SelectedIndex);
+            }
+        }
+
+        private void ProgramDenylistListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            removeSelectedFileButton.IsEnabled = e.AddedItems.Count > 0;
         }
     }
 }

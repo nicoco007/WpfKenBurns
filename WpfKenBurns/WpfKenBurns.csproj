@@ -17,6 +17,6 @@
     <Resource Include="FodyWeavers.xml" />
   </ItemGroup>
   <Target Name="Rename" AfterTargets="Build">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;$(TargetDir)Ken Burns.scr&quot;" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)Ken Burns.scr" />
   </Target>
 </Project>
