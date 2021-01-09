@@ -21,7 +21,7 @@ using System.Linq;
 
 namespace WpfKenBurns
 {
-    class RandomizedEnumerator<T> : IEnumerator<T>
+    class RandomizedEnumerator<T> : IEnumerator<T> where T : notnull
     {
         private T[] items;
         private int currentIndex = -1;
@@ -32,7 +32,7 @@ namespace WpfKenBurns
             Shuffle();
         }
 
-        public T Current => currentIndex >= 0 && currentIndex < items.Length ? items[currentIndex] : default;
+        public T Current => currentIndex >= 0 && currentIndex < items.Length ? items[currentIndex] : throw new InvalidOperationException();
 
         object IEnumerator.Current => Current;
 

@@ -26,7 +26,7 @@ namespace WpfKenBurns
 {
     public partial class ScreensaverWindow : Window
     {
-        public event Action DisplayChanged;
+        public event Action? DisplayChanged;
 
         private IntPtr windowHandle;
         private Configuration configuration;

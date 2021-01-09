@@ -4,6 +4,9 @@
     <TargetFramework>net472</TargetFramework>
     <UseWpf>true</UseWpf>
     <OutputType>WinExe</OutputType>
+    <Nullable>enable</Nullable>
+    <WarningsAsErrors>nullable</WarningsAsErrors>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Fody" Version="6.3.0">

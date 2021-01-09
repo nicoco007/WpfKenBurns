@@ -16,9 +16,15 @@
 
 namespace WpfKenBurns
 {
-    public class ScreensaverImageFolder
+    public readonly struct ScreensaverImageFolder
     {
-        public string Path { get; set; }
-        public bool Recursive { get; set; }
+        public readonly string Path;
+        public readonly bool Recursive;
+
+        public ScreensaverImageFolder(string path, bool recursive)
+        {
+            Path = path;
+            Recursive = recursive;
+        }
     }
 }

@@ -128,7 +128,7 @@ namespace WpfKenBurns
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         private ObservableCollection<ScreensaverImageFolder> folders = new ObservableCollection<ScreensaverImageFolder>();
         private float duration = 7;
@@ -210,11 +210,7 @@ namespace WpfKenBurns
 
             for (int i = 0; i < count; i++)
             {
-                configuration.Folders.Add(new ScreensaverImageFolder
-                {
-                    Path = reader.ReadString(),
-                    Recursive = reader.ReadBoolean()
-                });
+                configuration.Folders.Add(new ScreensaverImageFolder(reader.ReadString(), reader.ReadBoolean()));
             }
 
             count = reader.ReadInt32();

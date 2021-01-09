@@ -26,7 +26,7 @@ namespace WpfKenBurns
     /// </summary>
     public partial class ConfigurationWindow : Window
     {
-        private Configuration configuration;
+        private Configuration? configuration;
         private bool changed;
 
         public ConfigurationWindow()
@@ -57,17 +57,15 @@ namespace WpfKenBurns
 
         private void AddFolderButton_Click(object sender, RoutedEventArgs e)
         {
+            if (configuration == null) return;
+
             try
             {
                 VistaFolderBrowserDialog dialog = new VistaFolderBrowserDialog();
 
-                if (dialog.ShowDialog() != true) return;
+                if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.SelectedPath)) return;
 
-                configuration.Folders.Add(new ScreensaverImageFolder
-                {
-                    Path = dialog.SelectedPath,
-                    Recursive = false
-                });
+                configuration.Folders.Add(new ScreensaverImageFolder(dialog.SelectedPath, false));
             }
             catch (Exception ex)
             {
@@ -78,6 +76,8 @@ namespace WpfKenBurns
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
+            if (configuration == null) return;
+
             try
             {
                 Configuration.Save(configuration);
@@ -115,6 +115,8 @@ namespace WpfKenBurns
 
         private void RemoveFolderButton_Click(object sender, RoutedEventArgs e)
         {
+            if (configuration == null) return;
+
             if (imageSourcesListView.SelectedIndex >= 0)
             {
                 configuration.Folders.RemoveAt(imageSourcesListView.SelectedIndex);
@@ -128,13 +130,15 @@ namespace WpfKenBurns
 
         private void AddFileButton_Click(object sender, RoutedEventArgs e)
         {
+            if (configuration == null) return;
+
             try
             {
                 VistaOpenFileDialog dialog = new VistaOpenFileDialog();
 
                 dialog.Filter = "Executable Files (*.exe)|*.exe";
 
-                if (dialog.ShowDialog() != true) return;
+                if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.FileName)) return;
 
                 configuration.ProgramDenylist.Add(dialog.FileName);
             }
@@ -147,6 +151,8 @@ namespace WpfKenBurns
 
         private void RemoveFileButton_Click(object sender, RoutedEventArgs e)
         {
+            if (configuration == null) return;
+
             if (programDenylistListView.SelectedIndex >= 0)
             {
                 configuration.ProgramDenylist.RemoveAt(programDenylistListView.SelectedIndex);

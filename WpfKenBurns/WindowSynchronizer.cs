@@ -31,16 +31,17 @@ namespace WpfKenBurns
 {
     public class WindowSynchronizer
     {
-        private Configuration configuration;
-        private List<ScreensaverWindow> windows = new List<ScreensaverWindow>();
-        private Random random = new Random();
+        private readonly List<ScreensaverWindow> windows = new List<ScreensaverWindow>();
+        private readonly Random random = new Random();
+
+        private Configuration? configuration;
         private bool running = false;
-        private CancellationTokenSource cancellationTokenSource;
-        private Task task;
+        private CancellationTokenSource? cancellationTokenSource;
+        private Task? task;
         private IntPtr handle;
         private bool resetting = false;
 
-        private RandomizedEnumerator<string> fileEnumerator;
+        private RandomizedEnumerator<string>? fileEnumerator;
 
         public WindowSynchronizer() { }
 
@@ -62,6 +63,7 @@ namespace WpfKenBurns
                 Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
                 MessageBox.Show("Failed to load configuration: " + ex.Message);
                 Application.Current.Shutdown();
+                return;
             }
 
             foreach (string filePath in configuration.ProgramDenylist)
@@ -109,6 +111,7 @@ namespace WpfKenBurns
         private void EnumerateMonitors()
         {
             if (resetting) return;
+            if (configuration == null) return;
 
             resetting = true;
 
@@ -141,8 +144,8 @@ namespace WpfKenBurns
         private void RestartTask()
         {
             cancellationTokenSource?.Cancel();
+            cancellationTokenSource = null;
             task?.Wait();
-            cancellationTokenSource = new CancellationTokenSource();
             task = Task.Run(Worker);
             running = true;
         }
@@ -160,6 +163,8 @@ namespace WpfKenBurns
 
             try
             {
+                if (cancellationTokenSource == null) cancellationTokenSource = new CancellationTokenSource();
+
                 while (!cancellationTokenSource.IsCancellationRequested)
                 {
                     var storyboards = new Storyboard[windows.Count];
@@ -206,6 +211,8 @@ namespace WpfKenBurns
 
         private BitmapImage GetImage()
         {
+            if (fileEnumerator == null) return new BitmapImage();
+
             if (!fileEnumerator.MoveNext())
             {
                 fileEnumerator.Reset();
@@ -214,7 +221,7 @@ namespace WpfKenBurns
 
             string fileName = fileEnumerator.Current;
 
-            if (fileName == default) return null;
+            if (fileName == default) return new BitmapImage();
 
             FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
 
@@ -235,6 +242,8 @@ namespace WpfKenBurns
 
         private Storyboard SetupAnimation(Panel container, Image image, Size imageSize, ManualResetEventSlim resetEvent)
         {
+            if (configuration == null) return new Storyboard();
+
             double duration = configuration.Duration;
             double movementFactor = configuration.MovementFactor + 1;
             double scaleFactor = configuration.ScaleFactor + 1;
