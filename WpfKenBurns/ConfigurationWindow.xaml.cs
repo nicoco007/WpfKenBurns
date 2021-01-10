@@ -36,9 +36,19 @@ namespace WpfKenBurns
 
         private void UpdateConfiguration(Configuration config)
         {
+            if (configuration != null)
+            {
+                configuration.PropertyChanged -= OnConfigurationPropertyChanged;
+            }
+
             configuration = config;
             DataContext = config;
-            config.PropertyChanged += (sender, args) => changed = true;
+            config.PropertyChanged += OnConfigurationPropertyChanged;
+        }
+
+        private void OnConfigurationPropertyChanged(object sender, EventArgs e)
+        {
+            changed = true;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
