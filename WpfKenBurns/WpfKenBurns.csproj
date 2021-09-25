@@ -6,7 +6,7 @@
     <OutputType>WinExe</OutputType>
     <Nullable>enable</Nullable>
     <WarningsAsErrors>nullable</WarningsAsErrors>
-    <LangVersion>9</LangVersion>
+    <LangVersion>10</LangVersion>
     <Copyright>Copyright © 2019-2021 Nicolas Gnyra</Copyright>
     <Description>A simple Ken Burns-style screensaver</Description>
   </PropertyGroup>

@@ -21,9 +21,9 @@ using System.Linq;
 
 namespace WpfKenBurns
 {
-    class RandomizedEnumerator<T> : IEnumerator<T> where T : notnull
+    internal class RandomizedEnumerator<T> : IEnumerator<T>, IReadOnlyCollection<T> where T : notnull
     {
-        private T[] items;
+        private readonly T[] items;
         private int currentIndex = -1;
 
         public RandomizedEnumerator(IEnumerable<T> items)
@@ -32,7 +32,9 @@ namespace WpfKenBurns
             Shuffle();
         }
 
-        public T Current => currentIndex >= 0 && currentIndex < items.Length ? items[currentIndex] : throw new InvalidOperationException();
+        public T Current => currentIndex >= 0 && currentIndex < items.Length ? items[currentIndex] : throw new InvalidOperationException("Collection is empty");
+
+        public int Count => items.Length;
 
         object IEnumerator.Current => Current;
 
@@ -53,11 +55,21 @@ namespace WpfKenBurns
             Shuffle();
         }
 
+        public IEnumerator<T> GetEnumerator()
+        {
+            return (IEnumerator<T>)items.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return items.GetEnumerator();
+        }
+
         private void Shuffle()
         {
             if (items.Length <= 1) return;
 
-            Random random = new Random();
+            Random random = new();
 
             for (int i = items.Length - 1; i > 0; i--)
             {

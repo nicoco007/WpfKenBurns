@@ -72,7 +72,7 @@ namespace WpfKenBurns
 
         public Image CreateImage(BitmapImage source, Size size)
         {
-            Image image = new Image
+            Image image = new()
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top,

@@ -15,6 +15,7 @@
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 
@@ -29,37 +30,28 @@ namespace WpfKenBurns
         {
             if (e.Args.Length >= 1)
             {
-                string mode = e.Args[0].Trim().ToLower();
+                string mode = e.Args[0].Trim().ToLower(CultureInfo.InvariantCulture);
 
-                if (mode.StartsWith("/s"))
+                if (mode.StartsWith("/s", StringComparison.InvariantCulture))
                 {
-                    WindowSynchronizer sync = new WindowSynchronizer();
+                    WindowSynchronizer sync = new();
                     sync.Start();
                     return;
                 }
-                else if (mode.StartsWith("/p"))
+                else if (mode.StartsWith("/p", StringComparison.InvariantCulture))
                 {
-                    string strHandle;
-
-                    if (e.Args.Length >= 2)
-                    {
-                        strHandle = e.Args[1];
-                    }
-                    else
-                    {
-                        strHandle = e.Args[0].Split(':').ElementAtOrDefault(1);
-                    }
+                    string? strHandle = e.Args.Length >= 2 ? e.Args[1] : mode.Split(':').ElementAtOrDefault(1);
 
                     if (int.TryParse(strHandle, out int intHandle))
                     {
-                        WindowSynchronizer sync = new WindowSynchronizer(new IntPtr(intHandle));
+                        WindowSynchronizer sync = new(new IntPtr(intHandle));
                         sync.Start();
                         return;
                     }
                 }
             }
 
-            ConfigurationWindow window = new ConfigurationWindow();
+            ConfigurationWindow window = new();
             window.Show();
         }
     }

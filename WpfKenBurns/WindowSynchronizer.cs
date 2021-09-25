@@ -37,7 +37,6 @@ namespace WpfKenBurns
         private readonly IntPtr handle;
 
         private Configuration? configuration;
-        private bool running = false;
         private CancellationTokenSource? cancellationTokenSource;
         private Task? task;
         private bool resetting = false;
@@ -53,8 +52,6 @@ namespace WpfKenBurns
 
         public void Start()
         {
-            if (running) throw new InvalidOperationException();
-
             try
             {
                 configuration = Configuration.Load();
@@ -88,7 +85,6 @@ namespace WpfKenBurns
 
             fileEnumerator = new RandomizedEnumerator<string>(files);
 
-
             if (handle != IntPtr.Zero)
             {
                 ScreensaverWindow window = new(configuration, handle);
@@ -105,7 +101,6 @@ namespace WpfKenBurns
             Application.Current.Exit += (sender, e) =>
             {
                 cancellationTokenSource?.Cancel();
-                running = false;
             };
         }
 
@@ -147,11 +142,21 @@ namespace WpfKenBurns
             cancellationTokenSource?.Cancel();
             cancellationTokenSource = null;
             task?.Wait();
+
+            if (fileEnumerator == null || fileEnumerator.Count == 0)
+            {
+                foreach (ScreensaverWindow window in windows)
+                {
+                    window.errorTextBlock.Text = "No images found in selected folders.";
+                }
+
+                return;
+            }
+
             task = Task.Run(Worker);
-            running = true;
         }
 
-        private void Worker()
+        private async Task Worker()
         {
             ManualResetEventSlim[] previousResetEvents = new ManualResetEventSlim[windows.Count];
             Dispatcher uiDispatcher = Application.Current.Dispatcher;
@@ -168,18 +173,24 @@ namespace WpfKenBurns
 
                 while (!cancellationTokenSource.IsCancellationRequested)
                 {
-                    var storyboards = new Storyboard[windows.Count];
-                    var resetEvents = new ManualResetEventSlim[windows.Count];
+                    Storyboard[] storyboards = new Storyboard[windows.Count];
+                    ManualResetEventSlim[] resetEvents = new ManualResetEventSlim[windows.Count];
 
                     for (int i = 0; i < windows.Count; i++)
                     {
                         ScreensaverWindow window = windows[i];
-                        BitmapImage source = GetImage();
+                        BitmapImage? source = GetImage();
+
+                        if (source == null)
+                        {
+                            await uiDispatcher.InvokeAsync(() => window.errorTextBlock.Text = "No image");
+                            continue;
+                        }
 
                         double scale = Math.Max(window.ActualWidth / source.PixelWidth, window.ActualHeight / source.PixelHeight);
                         Size size = new(source.PixelWidth * scale, source.PixelHeight * scale);
 
-                        Image image = uiDispatcher.Invoke(() => window.CreateImage(source, size));
+                        Image image = await uiDispatcher.InvokeAsync(() => window.CreateImage(source, size));
 
                         Panel container = (Panel) image.Parent;
 
@@ -198,7 +209,11 @@ namespace WpfKenBurns
                         previousResetEvents[i] = resetEvents[i];
 
                         Storyboard storyboard = storyboards[i];
-                        Application.Current.Dispatcher.Invoke(() => storyboard.Begin());
+                        
+                        if (storyboard != null)
+                        {
+                            await uiDispatcher.InvokeAsync(() => storyboard.Begin());
+                        }
                     }
                 }
             }
@@ -206,13 +221,16 @@ namespace WpfKenBurns
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
-                Application.Current.Shutdown();
+                await uiDispatcher.InvokeAsync(() => Application.Current.Shutdown());
             }
         }
 
-        private BitmapImage GetImage()
+        private BitmapImage? GetImage()
         {
-            if (fileEnumerator == null) return new BitmapImage();
+            if (fileEnumerator == null || fileEnumerator.Count == 0)
+            {
+                return null;
+            }
 
             if (!fileEnumerator.MoveNext())
             {
@@ -222,9 +240,7 @@ namespace WpfKenBurns
 
             string fileName = fileEnumerator.Current;
 
-            if (fileName == default) return new BitmapImage();
-
-            FileStream fileStream = new(fileName, FileMode.Open, FileAccess.Read);
+            using FileStream fileStream = new(fileName, FileMode.Open, FileAccess.Read);
 
             BitmapImage image = new();
 
@@ -233,8 +249,6 @@ namespace WpfKenBurns
             image.CreateOptions = BitmapCreateOptions.None;
             image.StreamSource = fileStream;
             image.EndInit();
-
-            fileStream.Dispose();
 
             image.Freeze();
 
@@ -260,8 +274,8 @@ namespace WpfKenBurns
             DoubleAnimation opacityAnimation = new();
 
             bool zoomDirection = random.Next(2) == 1;
-            double fromScale = (zoomDirection ? scaleFactor : 1);
-            double toScale = (zoomDirection ? 1 : scaleFactor);
+            double fromScale = zoomDirection ? scaleFactor : 1;
+            double toScale = zoomDirection ? 1 : scaleFactor;
 
             double angle = random.NextDouble() * Math.PI * 2;
 
