@@ -28,10 +28,11 @@ namespace WpfKenBurns
     {
         public event Action? DisplayChanged;
 
-        private IntPtr windowHandle;
-        private Configuration configuration;
+        private readonly IntPtr windowHandle;
+        private readonly Configuration configuration;
+        private readonly bool isPreviewWindow = false;
+
         private Point lastMousePosition = default;
-        private bool isPreviewWindow = false;
 
         private ScreensaverWindow(Configuration config)
         {
@@ -54,8 +55,7 @@ namespace WpfKenBurns
             NativeMethods.SetWindowLong(windowHandle, -16, 0x40000000);
 
             // Place our window inside the parent
-            RECT parentRect;
-            NativeMethods.GetClientRect(previewHandle, out parentRect);
+            NativeMethods.GetClientRect(previewHandle, out RECT parentRect);
 
             NativeMethods.SetWindowPos(windowHandle, IntPtr.Zero, 0, 0, parentRect.Width, parentRect.Height, SetWindowPosFlags.ShowWindow);
 
