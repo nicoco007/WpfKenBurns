@@ -69,7 +69,7 @@ namespace WpfKenBurns
                 string fullPath = Path.GetFullPath(filePath);
                 Process[] processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(filePath));
 
-                if (processes.Any(p => Path.GetFullPath(p.MainModule.FileName) == fullPath))
+                if (processes.Any(p => !string.IsNullOrEmpty(p.MainModule?.FileName) && Path.GetFullPath(p.MainModule.FileName) == fullPath))
                 {
                     Application.Current.Shutdown();
                     return;

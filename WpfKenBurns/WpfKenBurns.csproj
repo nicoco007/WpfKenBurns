@@ -1,27 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-  <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-    <UseWpf>true</UseWpf>
-    <OutputType>WinExe</OutputType>
-    <Nullable>enable</Nullable>
-    <WarningsAsErrors>nullable</WarningsAsErrors>
-    <LangVersion>9</LangVersion>
-    <Copyright>Copyright © 2019-2021 Nicolas Gnyra</Copyright>
-    <Description>A simple Ken Burns-style screensaver</Description>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Fody" Version="6.3.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Costura.Fody" Version="4.1.0" PrivateAssets="All" />
-    <PackageReference Include="Ookii.Dialogs.Wpf" Version="3.1.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="FodyWeavers.xml" />
-  </ItemGroup>
-  <Target Name="Rename" AfterTargets="Build">
-    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)Ken Burns.scr" />
-  </Target>
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net5-windows</TargetFramework>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<UseWpf>true</UseWpf>
+		<OutputType>WinExe</OutputType>
+		<Nullable>enable</Nullable>
+		<WarningsAsErrors>nullable</WarningsAsErrors>
+		<LangVersion>9</LangVersion>
+		<Copyright>Copyright © 2019-2021 Nicolas Gnyra</Copyright>
+		<Description>A simple Ken Burns-style screensaver</Description>
+		<DebugType>embedded</DebugType>
+		<PublishSingleFile>true</PublishSingleFile>
+		<PublishReadyToRun>true</PublishReadyToRun>
+		<SelfContained>false</SelfContained>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="Ookii.Dialogs.Wpf" Version="4.0.0" />
+	</ItemGroup>
+	
+	<Target Name="Rename" AfterTargets="Publish">
+		<Copy SourceFiles="$(PublishDir)$(TargetName).exe" DestinationFiles="$(PublishDir)Ken Burns.scr" />
+	</Target>
 </Project>

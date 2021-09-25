@@ -97,12 +97,17 @@ namespace WpfKenBurns
             return r.Left == Left && r.Top == Top && r.Right == Right && r.Bottom == Bottom;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (obj is RECT)
-                return Equals((RECT)obj);
-            else if (obj is System.Drawing.Rectangle)
-                return Equals(new RECT((System.Drawing.Rectangle)obj));
+            if (obj is RECT rect)
+            {
+                return Equals(rect);
+            }
+            else if (obj is System.Drawing.Rectangle rectangle)
+            {
+                return Equals(new RECT(rectangle));
+            }
+
             return false;
         }
 

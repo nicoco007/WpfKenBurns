@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.If not, see<https://www.gnu.org/licenses/>.
 
+using System;
+
 namespace WpfKenBurns
 {
     public class ScreensaverImageFolder
@@ -28,7 +30,7 @@ namespace WpfKenBurns
 
         public bool Recursive { get; set; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is not ScreensaverImageFolder other) return false;
 
@@ -37,7 +39,7 @@ namespace WpfKenBurns
 
         public override int GetHashCode()
         {
-            return (Path, Recursive).GetHashCode();
+            return HashCode.Combine(Path, Recursive);
         }
     }
 }
