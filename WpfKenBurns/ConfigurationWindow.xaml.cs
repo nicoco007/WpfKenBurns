@@ -60,7 +60,7 @@ namespace WpfKenBurns
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
-                MessageBox.Show("Failed to load configuration: " + ex.Message);
+                MessageBox.Show("Failed to load configuration: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 UpdateConfiguration(new Configuration());
             }
         }
@@ -96,7 +96,7 @@ namespace WpfKenBurns
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
-                MessageBox.Show("Failed to save configuration: " + ex.Message);
+                MessageBox.Show("Failed to save configuration: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

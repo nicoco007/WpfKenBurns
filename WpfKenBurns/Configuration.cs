@@ -143,8 +143,8 @@ namespace WpfKenBurns
         {
             if (!Directory.Exists(ConfigurationFolder)) Directory.CreateDirectory(ConfigurationFolder);
 
-            FileStream fileStream = new FileStream(ConfigurationFile, FileMode.Create, FileAccess.Write);
-            BinaryWriter writer = new BinaryWriter(fileStream);
+            using FileStream fileStream = new FileStream(ConfigurationFile, FileMode.Create, FileAccess.Write);
+            using BinaryWriter writer = new BinaryWriter(fileStream);
 
             writer.Write(Magic);
             writer.Write(Revision);
@@ -170,9 +170,6 @@ namespace WpfKenBurns
             {
                 writer.Write(filePath);
             }
-
-            writer.Close();
-            fileStream.Close();
         }
 
         public static Configuration Load()
@@ -181,11 +178,11 @@ namespace WpfKenBurns
 
             if (!Directory.Exists(ConfigurationFolder)) Directory.CreateDirectory(ConfigurationFolder);
 
-            FileStream fileStream = new FileStream(ConfigurationFile, FileMode.OpenOrCreate, FileAccess.Read);
+            using FileStream fileStream = new FileStream(ConfigurationFile, FileMode.OpenOrCreate, FileAccess.Read);
 
             if (fileStream.Length == 0) return configuration;
 
-            BinaryReader reader = new BinaryReader(fileStream);
+            using BinaryReader reader = new BinaryReader(fileStream);
 
             if (!reader.ReadBytes(Magic.Length).SequenceEqual(Magic))
             {
@@ -219,9 +216,6 @@ namespace WpfKenBurns
             {
                 configuration.ProgramDenylist.Add(reader.ReadString());
             }
-
-            reader.Close();
-            fileStream.Close();
 
             return configuration;
         }
