@@ -130,21 +130,21 @@ namespace WpfKenBurns
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private ObservableCollection<ScreensaverImageFolder> folders = new ObservableCollection<ScreensaverImageFolder>();
+        private ObservableCollection<ScreensaverImageFolder> folders = new();
         private float duration = 7;
         private float fadeDuration = 1.5f;
         private float movementFactor = 0.05f;
         private float scaleFactor = 0.05f;
         private byte mouseSensitivity = 8;
         private BitmapScalingMode quality = BitmapScalingMode.HighQuality;
-        private ObservableCollection<string> programDenylist = new ObservableCollection<string>();
+        private ObservableCollection<string> programDenylist = new();
 
         public static void Save(Configuration configuration)
         {
             if (!Directory.Exists(ConfigurationFolder)) Directory.CreateDirectory(ConfigurationFolder);
 
-            using FileStream fileStream = new FileStream(ConfigurationFile, FileMode.Create, FileAccess.Write);
-            using BinaryWriter writer = new BinaryWriter(fileStream);
+            using FileStream fileStream = new(ConfigurationFile, FileMode.Create, FileAccess.Write);
+            using BinaryWriter writer = new(fileStream);
 
             writer.Write(Magic);
             writer.Write(Revision);
@@ -174,15 +174,15 @@ namespace WpfKenBurns
 
         public static Configuration Load()
         {
-            Configuration configuration = new Configuration();
+            Configuration configuration = new();
 
             if (!Directory.Exists(ConfigurationFolder)) Directory.CreateDirectory(ConfigurationFolder);
 
-            using FileStream fileStream = new FileStream(ConfigurationFile, FileMode.OpenOrCreate, FileAccess.Read);
+            using FileStream fileStream = new(ConfigurationFile, FileMode.OpenOrCreate, FileAccess.Read);
 
             if (fileStream.Length == 0) return configuration;
 
-            using BinaryReader reader = new BinaryReader(fileStream);
+            using BinaryReader reader = new(fileStream);
 
             if (!reader.ReadBytes(Magic.Length).SequenceEqual(Magic))
             {

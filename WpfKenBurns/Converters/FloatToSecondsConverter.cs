@@ -30,7 +30,7 @@ namespace WpfKenBurns.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (float.TryParse(value as string, out var result))
+            if (float.TryParse(value as string, out float result))
             {
                 return result;
             }

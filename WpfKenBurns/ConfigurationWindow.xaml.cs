@@ -71,7 +71,7 @@ namespace WpfKenBurns
 
             try
             {
-                VistaFolderBrowserDialog dialog = new VistaFolderBrowserDialog();
+                VistaFolderBrowserDialog dialog = new();
 
                 if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.SelectedPath)) return;
 
@@ -144,7 +144,7 @@ namespace WpfKenBurns
 
             try
             {
-                VistaOpenFileDialog dialog = new VistaOpenFileDialog();
+                VistaOpenFileDialog dialog = new();
 
                 dialog.Filter = "Executable Files (*.exe)|*.exe";
 

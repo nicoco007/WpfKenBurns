@@ -31,14 +31,15 @@ namespace WpfKenBurns
 {
     public class WindowSynchronizer
     {
-        private readonly List<ScreensaverWindow> windows = new List<ScreensaverWindow>();
-        private readonly Random random = new Random();
+        private readonly List<ScreensaverWindow> windows = new();
+        private readonly Random random = new();
+
+        private readonly IntPtr handle;
 
         private Configuration? configuration;
         private bool running = false;
         private CancellationTokenSource? cancellationTokenSource;
         private Task? task;
-        private IntPtr handle;
         private bool resetting = false;
 
         private RandomizedEnumerator<string>? fileEnumerator;
@@ -78,7 +79,7 @@ namespace WpfKenBurns
                 }
             }
 
-            List<string> files = new List<string>();
+            List<string> files = new();
 
             foreach (ScreensaverImageFolder folder in configuration.Folders)
             {
@@ -90,7 +91,7 @@ namespace WpfKenBurns
 
             if (handle != IntPtr.Zero)
             {
-                ScreensaverWindow window = new ScreensaverWindow(configuration, handle);
+                ScreensaverWindow window = new(configuration, handle);
                 window.Show();
                 windows.Add(window);
                 RestartTask();
@@ -124,7 +125,7 @@ namespace WpfKenBurns
 
             NativeMethods.EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData) =>
             {
-                ScreensaverWindow window = new ScreensaverWindow(configuration, lprcMonitor);
+                ScreensaverWindow window = new(configuration, lprcMonitor);
                 window.Show();
                 windows.Add(window);
                 window.DisplayChanged += OnDisplayChanged;
@@ -176,18 +177,18 @@ namespace WpfKenBurns
                         BitmapImage source = GetImage();
 
                         double scale = Math.Max(window.ActualWidth / source.PixelWidth, window.ActualHeight / source.PixelHeight);
-                        Size size = new Size(source.PixelWidth * scale, source.PixelHeight * scale);
+                        Size size = new(source.PixelWidth * scale, source.PixelHeight * scale);
 
                         Image image = uiDispatcher.Invoke(() => window.CreateImage(source, size));
 
                         Panel container = (Panel) image.Parent;
 
-                        var resetEvent = new ManualResetEventSlim(false);
+                        ManualResetEventSlim resetEvent = new(false);
                         storyboards[i] = SetupAnimation(container, image, size, resetEvent);
                         resetEvents[i] = resetEvent;
                     }
 
-                    foreach (var previousResetEvent in previousResetEvents)
+                    foreach (ManualResetEventSlim previousResetEvent in previousResetEvents)
                     {
                         previousResetEvent?.Wait(cancellationTokenSource.Token);
                     }
@@ -223,9 +224,9 @@ namespace WpfKenBurns
 
             if (fileName == default) return new BitmapImage();
 
-            FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            FileStream fileStream = new(fileName, FileMode.Open, FileAccess.Read);
 
-            BitmapImage image = new BitmapImage();
+            BitmapImage image = new();
 
             image.BeginInit();
             image.CacheOption = BitmapCacheOption.OnLoad;
@@ -253,10 +254,10 @@ namespace WpfKenBurns
             double width = container.ActualWidth;
             double height = container.ActualHeight;
 
-            ThicknessAnimation marginAnimation = new ThicknessAnimation();
-            DoubleAnimation widthAnimation = new DoubleAnimation();
-            DoubleAnimation heightAnimation = new DoubleAnimation();
-            DoubleAnimation opacityAnimation = new DoubleAnimation();
+            ThicknessAnimation marginAnimation = new();
+            DoubleAnimation widthAnimation = new();
+            DoubleAnimation heightAnimation = new();
+            DoubleAnimation opacityAnimation = new();
 
             bool zoomDirection = random.Next(2) == 1;
             double fromScale = (zoomDirection ? scaleFactor : 1);
@@ -300,14 +301,14 @@ namespace WpfKenBurns
             Storyboard.SetTargetProperty(heightAnimation, new PropertyPath(Image.HeightProperty));
             Storyboard.SetTargetProperty(opacityAnimation, new PropertyPath(Image.OpacityProperty));
 
-            Storyboard storyboard = new Storyboard();
+            Storyboard storyboard = new();
 
             storyboard.Children.Add(marginAnimation);
             storyboard.Children.Add(widthAnimation);
             storyboard.Children.Add(heightAnimation);
             storyboard.Children.Add(opacityAnimation);
 
-            storyboard.Duration = new Duration(TimeSpan.FromSeconds(totalDuration));
+            storyboard.Duration = new(TimeSpan.FromSeconds(totalDuration));
 
             bool nextStarted = false;
 
