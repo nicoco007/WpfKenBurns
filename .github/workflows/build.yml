@@ -12,7 +12,7 @@ jobs:
     - name: Set up .NET SDK
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.x 
+        dotnet-version: 6.0.x 
 
     - name: Build
       run: dotnet publish -c Release
@@ -21,4 +21,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: WpfKenBurns
-        path: WpfKenBurns/bin/Release/net5-windows/win-x64/publish/Ken Burns.scr
+        path: WpfKenBurns/bin/Release/net6-windows/win-x64/publish/Ken Burns.scr
