@@ -31,6 +31,8 @@ namespace WpfKenBurns
 {
     public class WindowSynchronizer
     {
+        private static readonly string[] ValidImageExtensions = { ".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tif", ".tiff", ".wmp" };
+
         private readonly List<ScreensaverWindow> windows = new();
         private readonly Random random = new();
 
@@ -80,7 +82,9 @@ namespace WpfKenBurns
 
             foreach (ScreensaverImageFolder folder in configuration.Folders)
             {
-                files.AddRange(Directory.GetFiles(folder.Path, "*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
+                files.AddRange(
+                    Directory.GetFiles(folder.Path, "*.*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+                        .Where(path => ValidImageExtensions.Contains(Path.GetExtension(path))));
             }
 
             fileEnumerator = new RandomizedEnumerator<string>(files);
@@ -209,7 +213,7 @@ namespace WpfKenBurns
                         previousResetEvents[i] = resetEvents[i];
 
                         Storyboard storyboard = storyboards[i];
-                        
+
                         if (storyboard != null)
                         {
                             await uiDispatcher.InvokeAsync(() => storyboard.Begin());
