@@ -1,29 +1,28 @@
-﻿// WpfKenBurns - A simple Ken Burns-style screensaver
+﻿// <copyright file="ConfigurationWindow.xaml.cs" company="PlaceholderCompany">
+// WpfKenBurns - A simple Ken Burns-style screensaver
 // Copyright © 2019-2022 Nicolas Gnyra
-
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
-
+//
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.If not, see<https://www.gnu.org/licenses/>.
+// along with this program.If not, see&lt;https://www.gnu.org/licenses/&gt;.
+// </copyright>
 
-using Ookii.Dialogs.Wpf;
 using System;
 using System.Diagnostics;
 using System.Windows;
+using Ookii.Dialogs.Wpf;
 
 namespace WpfKenBurns
 {
-    /// <summary>
-    /// Logique d'interaction pour ConfigurationWindow.xaml
-    /// </summary>
     public partial class ConfigurationWindow : Window
     {
         private Configuration? configuration;
@@ -31,51 +30,57 @@ namespace WpfKenBurns
 
         public ConfigurationWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         private void UpdateConfiguration(Configuration config)
         {
-            if (configuration != null)
+            if (this.configuration != null)
             {
-                configuration.PropertyChanged -= OnConfigurationPropertyChanged;
+                this.configuration.PropertyChanged -= this.OnConfigurationPropertyChanged;
             }
 
-            configuration = config;
-            DataContext = config;
-            config.PropertyChanged += OnConfigurationPropertyChanged;
+            this.configuration = config;
+            this.DataContext = config;
+            config.PropertyChanged += this.OnConfigurationPropertyChanged;
         }
 
         private void OnConfigurationPropertyChanged(object? sender, EventArgs e)
         {
-            changed = true;
+            this.changed = true;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
-                UpdateConfiguration(Configuration.Load());
+                this.UpdateConfiguration(Configuration.Load());
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
                 MessageBox.Show("Failed to load configuration: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                UpdateConfiguration(new Configuration());
+                this.UpdateConfiguration(new Configuration());
             }
         }
 
         private void AddFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            if (configuration == null) return;
+            if (this.configuration == null)
+            {
+                return;
+            }
 
             try
             {
                 VistaFolderBrowserDialog dialog = new();
 
-                if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.SelectedPath)) return;
+                if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.SelectedPath))
+                {
+                    return;
+                }
 
-                configuration.Folders.Add(new ScreensaverImageFolder(dialog.SelectedPath, false));
+                this.configuration.Folders.Add(new ScreensaverImageFolder(dialog.SelectedPath, false));
             }
             catch (Exception ex)
             {
@@ -86,12 +91,15 @@ namespace WpfKenBurns
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (configuration == null) return;
+            if (this.configuration == null)
+            {
+                return;
+            }
 
             try
             {
-                Configuration.Save(configuration);
-                Close();
+                Configuration.Save(this.configuration);
+                this.Close();
             }
             catch (Exception ex)
             {
@@ -106,41 +114,50 @@ namespace WpfKenBurns
 
             if (result == MessageBoxResult.Yes)
             {
-                UpdateConfiguration(new Configuration());
-                changed = true;
+                this.UpdateConfiguration(new Configuration());
+                this.changed = true;
             }
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (changed)
+            if (this.changed)
             {
                 MessageBoxResult result = MessageBox.Show("Are you sure you want to quit? Any changes will be lost.", "Are you sure?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
 
-                if (result != MessageBoxResult.Yes) return;
+                if (result != MessageBoxResult.Yes)
+                {
+                    return;
+                }
             }
 
-            Close();
+            this.Close();
         }
 
         private void RemoveFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            if (configuration == null) return;
-
-            if (imageSourcesListView.SelectedIndex >= 0)
+            if (this.configuration == null)
             {
-                configuration.Folders.RemoveAt(imageSourcesListView.SelectedIndex);
+                return;
+            }
+
+            if (this.imageSourcesListView.SelectedIndex >= 0)
+            {
+                this.configuration.Folders.RemoveAt(this.imageSourcesListView.SelectedIndex);
             }
         }
 
         private void FoldersListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            removeSelectedFolderButton.IsEnabled = e.AddedItems.Count > 0;
+            this.removeSelectedFolderButton.IsEnabled = e.AddedItems.Count > 0;
         }
 
         private void AddFileButton_Click(object sender, RoutedEventArgs e)
         {
-            if (configuration == null) return;
+            if (this.configuration == null)
+            {
+                return;
+            }
 
             try
             {
@@ -148,9 +165,12 @@ namespace WpfKenBurns
 
                 dialog.Filter = "Executable Files (*.exe)|*.exe";
 
-                if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.FileName)) return;
+                if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.FileName))
+                {
+                    return;
+                }
 
-                configuration.ProgramDenylist.Add(dialog.FileName);
+                this.configuration.ProgramDenylist.Add(dialog.FileName);
             }
             catch (Exception ex)
             {
@@ -161,17 +181,20 @@ namespace WpfKenBurns
 
         private void RemoveFileButton_Click(object sender, RoutedEventArgs e)
         {
-            if (configuration == null) return;
-
-            if (programDenylistListView.SelectedIndex >= 0)
+            if (this.configuration == null)
             {
-                configuration.ProgramDenylist.RemoveAt(programDenylistListView.SelectedIndex);
+                return;
+            }
+
+            if (this.programDenylistListView.SelectedIndex >= 0)
+            {
+                this.configuration.ProgramDenylist.RemoveAt(this.programDenylistListView.SelectedIndex);
             }
         }
 
         private void ProgramDenylistListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            removeSelectedFileButton.IsEnabled = e.AddedItems.Count > 0;
+            this.removeSelectedFileButton.IsEnabled = e.AddedItems.Count > 0;
         }
     }
 }

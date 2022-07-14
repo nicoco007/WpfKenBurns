@@ -1,18 +1,20 @@
-﻿// WpfKenBurns - A simple Ken Burns-style screensaver
+﻿// <copyright file="Configuration.cs" company="PlaceholderCompany">
+// WpfKenBurns - A simple Ken Burns-style screensaver
 // Copyright © 2019-2022 Nicolas Gnyra
-
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
-
+//
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.If not, see<https://www.gnu.org/licenses/>.
+// along with this program.If not, see&lt;https://www.gnu.org/licenses/&gt;.
+// </copyright>
 
 using System;
 using System.Collections.ObjectModel;
@@ -24,111 +26,12 @@ using System.Windows.Media;
 
 namespace WpfKenBurns
 {
-    public class Configuration : INotifyPropertyChanged
+    internal class Configuration : INotifyPropertyChanged
     {
-
         private static readonly byte[] Magic = { 0x54, 0x7d, 0x1d, 0x74 };
         private static readonly byte Revision = 1;
         private static readonly string ConfigurationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WpfKenBurns");
         private static readonly string ConfigurationFile = Path.Combine(ConfigurationFolder, "config");
-
-        public ObservableCollection<ScreensaverImageFolder> Folders
-        {
-            get => folders;
-            set
-            {
-                if (folders == value) return;
-
-                folders = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        public float Duration
-        {
-            get => duration;
-            set
-            {
-                if (duration == value) return;
-
-                duration = Clamp(value, 1, 30);
-                NotifyPropertyChanged();
-            }
-        }
-
-        public float FadeDuration
-        {
-            get => fadeDuration;
-            set
-            {
-                if (fadeDuration == value) return;
-
-                fadeDuration = Clamp(value, 0.5f, 30);
-                NotifyPropertyChanged();
-            }
-        }
-
-        public float MovementFactor
-        {
-            get => movementFactor;
-            set
-            {
-                if (movementFactor == value) return;
-
-                movementFactor = Clamp(value, 0, 1);
-                NotifyPropertyChanged();
-            }
-        }
-
-        public float ScaleFactor
-        {
-            get => scaleFactor;
-            set
-            {
-                if (scaleFactor == value) return;
-
-                scaleFactor = Clamp(value, 0, 1);
-                NotifyPropertyChanged();
-            }
-        }
-
-        public byte MouseSensitivity
-        {
-            get => mouseSensitivity;
-            set
-            {
-                if (mouseSensitivity == value) return;
-
-                mouseSensitivity = Clamp(value, 0, 10);
-                NotifyPropertyChanged();
-            }
-        }
-
-        public BitmapScalingMode Quality
-        {
-            get => quality;
-            set
-            {
-                if (quality == value) return;
-
-                quality = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        public ObservableCollection<string> ProgramDenylist
-        {
-            get => programDenylist;
-            set
-            {
-                if (programDenylist == value) return;
-
-                programDenylist = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         private ObservableCollection<ScreensaverImageFolder> folders = new();
         private float duration = 7;
@@ -139,9 +42,134 @@ namespace WpfKenBurns
         private BitmapScalingMode quality = BitmapScalingMode.HighQuality;
         private ObservableCollection<string> programDenylist = new();
 
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public ObservableCollection<ScreensaverImageFolder> Folders
+        {
+            get => this.folders;
+            set
+            {
+                if (this.folders == value)
+                {
+                    return;
+                }
+
+                this.folders = value;
+                this.NotifyPropertyChanged();
+            }
+        }
+
+        public float Duration
+        {
+            get => this.duration;
+            set
+            {
+                if (this.duration == value)
+                {
+                    return;
+                }
+
+                this.duration = Math.Clamp(value, 1, 30);
+                this.NotifyPropertyChanged();
+            }
+        }
+
+        public float FadeDuration
+        {
+            get => this.fadeDuration;
+            set
+            {
+                if (this.fadeDuration == value)
+                {
+                    return;
+                }
+
+                this.fadeDuration = Math.Clamp(value, 0.5f, 30);
+                this.NotifyPropertyChanged();
+            }
+        }
+
+        public float MovementFactor
+        {
+            get => this.movementFactor;
+            set
+            {
+                if (this.movementFactor == value)
+                {
+                    return;
+                }
+
+                this.movementFactor = Math.Clamp(value, 0, 1);
+                this.NotifyPropertyChanged();
+            }
+        }
+
+        public float ScaleFactor
+        {
+            get => this.scaleFactor;
+            set
+            {
+                if (this.scaleFactor == value)
+                {
+                    return;
+                }
+
+                this.scaleFactor = Math.Clamp(value, 0, 1);
+                this.NotifyPropertyChanged();
+            }
+        }
+
+        public byte MouseSensitivity
+        {
+            get => this.mouseSensitivity;
+            set
+            {
+                if (this.mouseSensitivity == value)
+                {
+                    return;
+                }
+
+                this.mouseSensitivity = Math.Clamp(value, (byte)0, (byte)10);
+                this.NotifyPropertyChanged();
+            }
+        }
+
+        public BitmapScalingMode Quality
+        {
+            get => this.quality;
+            set
+            {
+                if (this.quality == value)
+                {
+                    return;
+                }
+
+                this.quality = value;
+                this.NotifyPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<string> ProgramDenylist
+        {
+            get => this.programDenylist;
+            set
+            {
+                if (this.programDenylist == value)
+                {
+                    return;
+                }
+
+                this.programDenylist = value;
+                this.NotifyPropertyChanged();
+            }
+        }
+
         public static void Save(Configuration configuration)
         {
-            if (!Directory.Exists(ConfigurationFolder)) Directory.CreateDirectory(ConfigurationFolder);
+            if (!Directory.Exists(ConfigurationFolder))
+            {
+                Directory.CreateDirectory(ConfigurationFolder);
+            }
 
             using FileStream fileStream = new(ConfigurationFile, FileMode.Create, FileAccess.Write);
             using BinaryWriter writer = new(fileStream);
@@ -176,11 +204,17 @@ namespace WpfKenBurns
         {
             Configuration configuration = new();
 
-            if (!Directory.Exists(ConfigurationFolder)) Directory.CreateDirectory(ConfigurationFolder);
+            if (!Directory.Exists(ConfigurationFolder))
+            {
+                Directory.CreateDirectory(ConfigurationFolder);
+            }
 
             using FileStream fileStream = new(ConfigurationFile, FileMode.OpenOrCreate, FileAccess.Read);
 
-            if (fileStream.Length == 0) return configuration;
+            if (fileStream.Length == 0)
+            {
+                return configuration;
+            }
 
             using BinaryReader reader = new(fileStream);
 
@@ -220,37 +254,9 @@ namespace WpfKenBurns
             return configuration;
         }
 
-        public void CopyFrom(Configuration other)
-        {
-            Folders          = other.Folders;
-            Duration         = other.Duration;
-            FadeDuration     = other.FadeDuration;
-            MovementFactor   = other.MovementFactor;
-            ScaleFactor      = other.ScaleFactor;
-            MouseSensitivity = other.MouseSensitivity;
-            Quality          = other.Quality;
-            ProgramDenylist = other.ProgramDenylist;
-        }
-
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private static byte Clamp(byte value, byte min, byte max)
-        {
-            if (value > max) return max;
-            if (value < min) return min;
-
-            return value;
-        }
-
-        private static float Clamp(float value, float min, float max)
-        {
-            if (value > max) return max;
-            if (value < min) return min;
-
-            return value;
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

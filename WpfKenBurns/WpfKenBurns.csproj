@@ -1,26 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>net6-windows</TargetFramework>
-		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
-		<UseWpf>true</UseWpf>
-		<OutputType>WinExe</OutputType>
-		<Nullable>enable</Nullable>
-		<WarningsAsErrors>nullable</WarningsAsErrors>
-		<LangVersion>9</LangVersion>
-		<Copyright>Copyright © 2019-2022 Nicolas Gnyra</Copyright>
-		<Description>A simple Ken Burns-style screensaver</Description>
-		<DebugType>embedded</DebugType>
-		<PublishSingleFile>true</PublishSingleFile>
-		<PublishReadyToRun>true</PublishReadyToRun>
-		<SelfContained>false</SelfContained>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net6-windows</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWpf>true</UseWpf>
+    <OutputType>WinExe</OutputType>
+    <Nullable>enable</Nullable>
+    <WarningsAsErrors>nullable</WarningsAsErrors>
+    <LangVersion>10</LangVersion>
+    <Copyright>Copyright © 2019-2022 Nicolas Gnyra</Copyright>
+    <Description>A simple Ken Burns-style screensaver</Description>
+    <DebugType>embedded</DebugType>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <SelfContained>false</SelfContained>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <AdditionalFiles Include="stylecop.json" />
+  </ItemGroup>
 	
-	<ItemGroup>
-		<PackageReference Include="Ookii.Dialogs.Wpf" Version="4.0.0" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="4.0.0" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 	
-	<Target Name="Rename" AfterTargets="Publish">
-		<Copy SourceFiles="$(PublishDir)$(TargetName).exe" DestinationFiles="$(PublishDir)Ken Burns.scr" />
-	</Target>
+  <Target Name="Rename" AfterTargets="Publish">
+    <Copy SourceFiles="$(PublishDir)$(TargetName).exe" DestinationFiles="$(PublishDir)Ken Burns.scr" />
+  </Target>
+	
+  <ItemGroup>
+    <EditorConfigFiles Remove="D:\Users\Nicolas\Source\Repos\WpfKenBurns\WpfKenBurns\.editorconfig" />
+  </ItemGroup>
+	
+  <ItemGroup>
+    <None Include="D:\Users\Nicolas\Source\Repos\WpfKenBurns\WpfKenBurns\.editorconfig" />
+  </ItemGroup>
 </Project>

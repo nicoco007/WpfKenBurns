@@ -1,18 +1,20 @@
-﻿// WpfKenBurns - A simple Ken Burns-style screensaver
+﻿// <copyright file="RandomizedEnumerator.cs" company="PlaceholderCompany">
+// WpfKenBurns - A simple Ken Burns-style screensaver
 // Copyright © 2019-2022 Nicolas Gnyra
-
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
-
+//
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.If not, see<https://www.gnu.org/licenses/>.
+// along with this program.If not, see&lt;https://www.gnu.org/licenses/&gt;.
+// </copyright>
 
 using System;
 using System.Collections;
@@ -21,7 +23,8 @@ using System.Linq;
 
 namespace WpfKenBurns
 {
-    internal class RandomizedEnumerator<T> : IEnumerator<T>, ICollection<T> where T : notnull
+    internal class RandomizedEnumerator<T> : IEnumerator<T>, ICollection<T>
+        where T : notnull
     {
         private readonly List<T> items;
         private readonly Random random = new();
@@ -30,32 +33,37 @@ namespace WpfKenBurns
         public RandomizedEnumerator(IEnumerable<T> items)
         {
             this.items = items.ToList();
-            Shuffle();
+            this.Shuffle();
         }
 
-        public T Current => currentIndex >= 0 && currentIndex < items.Count ? items[currentIndex] : throw new InvalidOperationException("Collection is empty");
+        public T Current => this.currentIndex >= 0 && this.currentIndex < this.items.Count ? this.items[this.currentIndex] : throw new InvalidOperationException("Collection is empty");
 
-        public int Count => items.Count;
+        public int Count => this.items.Count;
 
-        object IEnumerator.Current => Current;
+        object IEnumerator.Current => this.Current;
 
         public bool IsReadOnly => false;
 
-        public void Dispose() { }
+        public void Dispose()
+        {
+        }
 
         public bool MoveNext()
         {
-            if (items.Count == 0) return false;
+            if (this.items.Count == 0)
+            {
+                return false;
+            }
 
-            currentIndex++;
+            this.currentIndex++;
 
-            return currentIndex < items.Count;
+            return this.currentIndex < this.items.Count;
         }
 
         public void Reset()
         {
-            currentIndex = -1;
-            Shuffle();
+            this.currentIndex = -1;
+            this.Shuffle();
         }
 
         public IEnumerator<T> GetEnumerator()
@@ -70,38 +78,41 @@ namespace WpfKenBurns
 
         public void Add(T item)
         {
-            items.Add(item);
+            this.items.Add(item);
         }
 
         public void Clear()
         {
-            items.Clear();
+            this.items.Clear();
         }
 
         public bool Contains(T item)
         {
-            return items.Contains(item);
+            return this.items.Contains(item);
         }
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            items.CopyTo(array, arrayIndex);
+            this.items.CopyTo(array, arrayIndex);
         }
 
         public bool Remove(T item)
         {
-            return items.Remove(item);
+            return this.items.Remove(item);
         }
 
         private void Shuffle()
         {
-            if (items.Count <= 1) return;
-
-            for (int i = items.Count - 1; i > 0; i--)
+            if (this.items.Count <= 1)
             {
-                int j = random.Next(i + 1);
+                return;
+            }
 
-                (items[j], items[i]) = (items[i], items[j]);
+            for (int i = this.items.Count - 1; i > 0; i--)
+            {
+                int j = this.random.Next(i + 1);
+
+                (this.items[j], this.items[i]) = (this.items[i], this.items[j]);
             }
         }
     }
