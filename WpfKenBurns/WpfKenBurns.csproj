@@ -8,7 +8,7 @@
 		<Nullable>enable</Nullable>
 		<WarningsAsErrors>nullable</WarningsAsErrors>
 		<LangVersion>9</LangVersion>
-		<Copyright>Copyright © 2019-2021 Nicolas Gnyra</Copyright>
+		<Copyright>Copyright © 2019-2022 Nicolas Gnyra</Copyright>
 		<Description>A simple Ken Burns-style screensaver</Description>
 		<DebugType>embedded</DebugType>
 		<PublishSingleFile>true</PublishSingleFile>
