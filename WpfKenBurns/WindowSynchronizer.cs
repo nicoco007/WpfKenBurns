@@ -82,9 +82,16 @@ namespace WpfKenBurns
 
             foreach (ScreensaverImageFolder folder in configuration.Folders)
             {
-                files.AddRange(
-                    Directory.GetFiles(folder.Path, "*.*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-                        .Where(path => ValidImageExtensions.Contains(Path.GetExtension(path))));
+                try
+                {
+                    files.AddRange(
+                        Directory.GetFiles(folder.Path, "*.*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+                            .Where(path => ValidImageExtensions.Contains(Path.GetExtension(path))));
+                }
+                catch (IOException ex)
+                {
+                    Debug.WriteLine(ex);
+                }
             }
 
             fileEnumerator = new RandomizedEnumerator<string>(files);
@@ -94,7 +101,7 @@ namespace WpfKenBurns
                 ScreensaverWindow window = new(configuration, handle);
                 window.Show();
                 windows.Add(window);
-                RestartTask();
+                RestartWorker();
             }
             else
             {
@@ -105,6 +112,7 @@ namespace WpfKenBurns
             Application.Current.Exit += (sender, e) =>
             {
                 cancellationTokenSource?.Cancel();
+                cancellationTokenSource?.Dispose();
             };
         }
 
@@ -131,7 +139,7 @@ namespace WpfKenBurns
                 return true;
             }, IntPtr.Zero);
 
-            RestartTask();
+            RestartWorker();
 
             resetting = false;
         }
@@ -141,125 +149,123 @@ namespace WpfKenBurns
             EnumerateMonitors();
         }
 
-        private void RestartTask()
+        private void RestartWorker()
         {
             cancellationTokenSource?.Cancel();
+            cancellationTokenSource?.Dispose();
             cancellationTokenSource = null;
+
             task?.Wait();
 
-            if (fileEnumerator == null || fileEnumerator.Count == 0)
+            task = Task.Run(Worker).ContinueWith(OnWorkerTaskFaulted, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void OnWorkerTaskFaulted(Task task)
+        {
+            Debug.WriteLine(task.Exception);
+
+            foreach (ScreensaverWindow window in windows)
             {
-                foreach (ScreensaverWindow window in windows)
-                {
-                    window.errorTextBlock.Text = "No images found in selected folders.";
-                }
-
-                return;
+                window.errorTextBlock.Text = string.Join("\n", task.Exception!.InnerExceptions.Select(ex => ex.Message));
             }
-
-            task = Task.Run(Worker);
         }
 
         private async Task Worker()
         {
-            ManualResetEventSlim[] previousResetEvents = new ManualResetEventSlim[windows.Count];
             Dispatcher uiDispatcher = Application.Current.Dispatcher;
 
-            if (uiDispatcher == null)
+            await uiDispatcher.InvokeAsync(() =>
             {
-                Debug.WriteLine("UI dispatcher does not exist!");
-                return;
-            }
-
-            try
-            {
-                if (cancellationTokenSource == null) cancellationTokenSource = new CancellationTokenSource();
-
-                while (!cancellationTokenSource.IsCancellationRequested)
+                foreach (ScreensaverWindow window in windows)
                 {
-                    Storyboard[] storyboards = new Storyboard[windows.Count];
-                    ManualResetEventSlim[] resetEvents = new ManualResetEventSlim[windows.Count];
+                    window.errorTextBlock.Text = null;
+                }
+            });
 
-                    for (int i = 0; i < windows.Count; i++)
+            cancellationTokenSource = new CancellationTokenSource();
+            CancellationToken cancellationToken = cancellationTokenSource.Token;
+
+            TaskCompletionSource? taskCompletionSource = null;
+            cancellationToken.Register(() => taskCompletionSource?.TrySetCanceled());
+
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                Storyboard?[] storyboards = new Storyboard?[windows.Count];
+                CountdownEvent countdownEvent = new(windows.Count);
+
+                for (int i = 0; i < windows.Count; i++)
+                {
+                    ScreensaverWindow window = windows[i];
+                    BitmapImage source = GetImage();
+
+                    double scale = Math.Max(window.ActualWidth / source.PixelWidth, window.ActualHeight / source.PixelHeight);
+                    Size size = new(source.PixelWidth * scale, source.PixelHeight * scale);
+
+                    Image image = await uiDispatcher.InvokeAsync(() => window.CreateImage(source, size));
+
+                    Panel container = (Panel)image.Parent;
+
+                    ManualResetEventSlim resetEvent = new(false);
+                    storyboards[i] = CreateStoryboardAnimation(container, image, size, countdownEvent);
+                }
+
+                if (taskCompletionSource != null)
+                {
+                    await taskCompletionSource.Task;
+                }
+
+                await uiDispatcher.InvokeAsync(() =>
+                {
+                    foreach (Storyboard? storyboard in storyboards)
                     {
-                        ScreensaverWindow window = windows[i];
-                        BitmapImage? source = GetImage();
-
-                        if (source == null)
-                        {
-                            await uiDispatcher.InvokeAsync(() => window.errorTextBlock.Text = "No image");
-                            continue;
-                        }
-
-                        double scale = Math.Max(window.ActualWidth / source.PixelWidth, window.ActualHeight / source.PixelHeight);
-                        Size size = new(source.PixelWidth * scale, source.PixelHeight * scale);
-
-                        Image image = await uiDispatcher.InvokeAsync(() => window.CreateImage(source, size));
-
-                        Panel container = (Panel) image.Parent;
-
-                        ManualResetEventSlim resetEvent = new(false);
-                        storyboards[i] = SetupAnimation(container, image, size, resetEvent);
-                        resetEvents[i] = resetEvent;
+                        storyboard?.Begin();
                     }
+                });
 
-                    foreach (ManualResetEventSlim previousResetEvent in previousResetEvents)
-                    {
-                        previousResetEvent?.Wait(cancellationTokenSource.Token);
-                    }
+                taskCompletionSource = new TaskCompletionSource();
+                ThreadPool.RegisterWaitForSingleObject(countdownEvent.WaitHandle, (state, timeout) => taskCompletionSource?.TrySetResult(), null, -1, true);
+            }
+        }
 
-                    for (int i = 0; i < storyboards.Length; i++)
-                    {
-                        previousResetEvents[i] = resetEvents[i];
+        private BitmapImage GetImage()
+        {
+            while (fileEnumerator!.Count > 0)
+            {
+                if (!fileEnumerator.MoveNext())
+                {
+                    fileEnumerator.Reset();
+                    fileEnumerator.MoveNext();
+                }
 
-                        Storyboard storyboard = storyboards[i];
+                string filePath = fileEnumerator.Current;
 
-                        if (storyboard != null)
-                        {
-                            await uiDispatcher.InvokeAsync(() => storyboard.Begin());
-                        }
-                    }
+                try
+                {
+                    using FileStream fileStream = new(filePath, FileMode.Open, FileAccess.Read);
+
+                    BitmapImage image = new();
+
+                    image.BeginInit();
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.CreateOptions = BitmapCreateOptions.None;
+                    image.StreamSource = fileStream;
+                    image.EndInit();
+
+                    image.Freeze();
+
+                    return image;
+                }
+                catch (Exception ex) when (ex is NotSupportedException or IOException)
+                {
+                    Debug.WriteLine($"Failed to load '{filePath}'; removing from list\n{ex}");
+                    fileEnumerator.Remove(fileEnumerator.Current);
                 }
             }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-                await uiDispatcher.InvokeAsync(() => Application.Current.Shutdown());
-            }
+
+            throw new Exception("No images could be loaded");
         }
 
-        private BitmapImage? GetImage()
-        {
-            if (fileEnumerator == null || fileEnumerator.Count == 0)
-            {
-                return null;
-            }
-
-            if (!fileEnumerator.MoveNext())
-            {
-                fileEnumerator.Reset();
-                fileEnumerator.MoveNext();
-            }
-
-            string fileName = fileEnumerator.Current;
-
-            using FileStream fileStream = new(fileName, FileMode.Open, FileAccess.Read);
-
-            BitmapImage image = new();
-
-            image.BeginInit();
-            image.CacheOption = BitmapCacheOption.OnLoad;
-            image.CreateOptions = BitmapCreateOptions.None;
-            image.StreamSource = fileStream;
-            image.EndInit();
-
-            image.Freeze();
-
-            return image;
-        }
-
-        private Storyboard SetupAnimation(Panel container, Image image, Size imageSize, ManualResetEventSlim resetEvent)
+        private Storyboard CreateStoryboardAnimation(Panel container, Image image, Size imageSize, CountdownEvent countdownEvent)
         {
             if (configuration == null) return new Storyboard();
 
@@ -329,13 +335,13 @@ namespace WpfKenBurns
             storyboard.Duration = new(TimeSpan.FromSeconds(totalDuration));
 
             bool nextStarted = false;
-
+            
             storyboard.CurrentTimeInvalidated += (sender, args) =>
             {
                 if (!nextStarted && storyboard.GetCurrentTime() >= TimeSpan.FromSeconds(duration + fadeDuration))
                 {
                     nextStarted = true;
-                    resetEvent.Set();
+                    countdownEvent.Signal();
                 }
             };
 

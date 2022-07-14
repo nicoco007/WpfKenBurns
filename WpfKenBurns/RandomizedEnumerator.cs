@@ -21,32 +21,35 @@ using System.Linq;
 
 namespace WpfKenBurns
 {
-    internal class RandomizedEnumerator<T> : IEnumerator<T>, IReadOnlyCollection<T> where T : notnull
+    internal class RandomizedEnumerator<T> : IEnumerator<T>, ICollection<T> where T : notnull
     {
-        private readonly T[] items;
+        private readonly List<T> items;
+        private readonly Random random = new();
         private int currentIndex = -1;
 
         public RandomizedEnumerator(IEnumerable<T> items)
         {
-            this.items = items.ToArray();
+            this.items = items.ToList();
             Shuffle();
         }
 
-        public T Current => currentIndex >= 0 && currentIndex < items.Length ? items[currentIndex] : throw new InvalidOperationException("Collection is empty");
+        public T Current => currentIndex >= 0 && currentIndex < items.Count ? items[currentIndex] : throw new InvalidOperationException("Collection is empty");
 
-        public int Count => items.Length;
+        public int Count => items.Count;
 
         object IEnumerator.Current => Current;
+
+        public bool IsReadOnly => false;
 
         public void Dispose() { }
 
         public bool MoveNext()
         {
-            if (items.Length == 0) return false;
+            if (items.Count == 0) return false;
 
             currentIndex++;
 
-            return currentIndex < items.Length;
+            return currentIndex < items.Count;
         }
 
         public void Reset()
@@ -57,27 +60,48 @@ namespace WpfKenBurns
 
         public IEnumerator<T> GetEnumerator()
         {
-            return (IEnumerator<T>)items.GetEnumerator();
+            return this;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return items.GetEnumerator();
+            return this;
+        }
+
+        public void Add(T item)
+        {
+            items.Add(item);
+        }
+
+        public void Clear()
+        {
+            items.Clear();
+        }
+
+        public bool Contains(T item)
+        {
+            return items.Contains(item);
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            items.CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(T item)
+        {
+            return items.Remove(item);
         }
 
         private void Shuffle()
         {
-            if (items.Length <= 1) return;
+            if (items.Count <= 1) return;
 
-            Random random = new();
-
-            for (int i = items.Length - 1; i > 0; i--)
+            for (int i = items.Count - 1; i > 0; i--)
             {
                 int j = random.Next(i + 1);
 
-                T tmp = items[i];
-                items[i] = items[j];
-                items[j] = tmp;
+                (items[j], items[i]) = (items[i], items[j]);
             }
         }
     }
