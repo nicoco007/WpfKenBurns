@@ -20,31 +20,5 @@ using System;
 
 namespace WpfKenBurns
 {
-    internal class ScreensaverImageFolder
-    {
-        public ScreensaverImageFolder(string path, bool recursive)
-        {
-            this.Path = path;
-            this.Recursive = recursive;
-        }
-
-        public string Path { get; set; }
-
-        public bool Recursive { get; set; }
-
-        public override bool Equals(object? obj)
-        {
-            if (obj is not ScreensaverImageFolder other)
-            {
-                return false;
-            }
-
-            return (this.Path, this.Recursive) == (other.Path, other.Recursive);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(this.Path, this.Recursive);
-        }
-    }
+    internal record ScreensaverImageFolder(string Path, bool Recursive);
 }

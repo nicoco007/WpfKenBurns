@@ -106,7 +106,7 @@ namespace WpfKenBurns
                 ScreensaverWindow window = new(this.configuration, this.handle);
                 window.Show();
                 this.windows.Add(window);
-                this.RestartWorker();
+                this.StartWorker();
             }
             else
             {
@@ -144,6 +144,7 @@ namespace WpfKenBurns
             }
 
             this.resetting = true;
+            this.StopWorker();
 
             foreach (Window window in this.windows)
             {
@@ -165,7 +166,7 @@ namespace WpfKenBurns
                 },
                 IntPtr.Zero);
 
-            this.RestartWorker();
+            this.StartWorker();
 
             this.resetting = false;
         }
@@ -175,28 +176,40 @@ namespace WpfKenBurns
             this.EnumerateMonitors();
         }
 
-        private void RestartWorker()
+        private void StopWorker()
         {
             this.cancellationTokenSource?.Cancel();
             this.cancellationTokenSource?.Dispose();
             this.cancellationTokenSource = null;
 
             this.task?.Wait();
-
-            this.task = Task.Run(this.Worker).ContinueWith(this.OnWorkerTaskFaulted, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        private void OnWorkerTaskFaulted(Task task)
+        private void StartWorker()
         {
+            this.cancellationTokenSource = new CancellationTokenSource();
+            this.task = Task.Run(() => this.Worker(this.cancellationTokenSource.Token), this.cancellationTokenSource.Token).ContinueWith(this.OnWorkerTaskCompleted);
+        }
+
+        private async Task OnWorkerTaskCompleted(Task task)
+        {
+            if (!task.IsFaulted)
+            {
+                return;
+            }
+
             Debug.WriteLine(task.Exception);
 
-            foreach (ScreensaverWindow window in this.windows)
+            await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                window.errorTextBlock.Text = string.Join("\n", task.Exception!.InnerExceptions.Select(ex => ex.Message));
-            }
+                foreach (ScreensaverWindow window in this.windows)
+                {
+                    window.errorTextBlock.Text = string.Join("\n", task.Exception!.InnerExceptions.Select(ex => ex.Message));
+                }
+            });
         }
 
-        private async Task Worker()
+        private async Task Worker(CancellationToken cancellationToken)
         {
             Dispatcher uiDispatcher = Application.Current.Dispatcher;
 
@@ -208,14 +221,13 @@ namespace WpfKenBurns
                 }
             });
 
-            this.cancellationTokenSource = new CancellationTokenSource();
-            CancellationToken cancellationToken = this.cancellationTokenSource.Token;
-
             TaskCompletionSource? taskCompletionSource = null;
             cancellationToken.Register(() => taskCompletionSource?.TrySetCanceled());
 
-            while (!cancellationToken.IsCancellationRequested)
+            while (true)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Storyboard?[] storyboards = new Storyboard?[this.windows.Count];
                 CountdownEvent countdownEvent = new(this.windows.Count);
 
