@@ -12,4 +12,6 @@ A simple, no-nonsense image screensaver for Windows inspired by macOS's Ken Burn
 * Program denylist to prevent the screensaver from running when certain programs are open
 
 ## Installing
-Get [the latest build (usually stable)](https://nightly.link/nicoco007/WpfKenBurns/workflows/build/main/WpfKenBurns.zip) and copy it into `C:\Windows\System32` (32-bit and 64-bit systems) or `C:\Windows\SysWOW64` (64-bit systems only) to install it system-wide. You will need to install the [.NET Desktop Runtime 6](https://dotnet.microsoft.com/download/dotnet/6.0) if you do not already have it.
+Get [the latest build (usually stable)](https://nightly.link/nicoco007/WpfKenBurns/workflows/build/main/WpfKenBurns.zip) and copy it into `C:\Windows\System32` to install it system-wide. You will need to install the [.NET Runtime 6 for Desktop Apps](https://dotnet.microsoft.com/download/dotnet/6.0/runtime) if you do not already have it.
+
+To enable and configure the screensaver, open the Settings app, navigate to _Personalization_ > _Lock Screen_, and select _Screen Saver_ in the additional settings section. In the Screen Saver Settings window that opens, choose "Ken Burns" from the drop-down list and press "Settings&hellip;" to configure the screensaver.
