@@ -7,18 +7,13 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Check out
-      uses: actions/checkout@v2
-
-    - name: Set up .NET SDK
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 6.0.x 
+      uses: actions/checkout@v6
 
     - name: Build
       run: dotnet publish -c Release
 
     - name: Upload
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v7
       with:
         name: WpfKenBurns
-        path: WpfKenBurns/bin/Release/net6-windows/win-x64/publish/Ken Burns.scr
+        path: WpfKenBurns/bin/Release/win-x64/publish/Ken Burns.scr
