@@ -256,10 +256,11 @@ namespace WpfKenBurns
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                Storyboard?[] storyboards = new Storyboard?[this.windows.Count];
-                CountdownEvent countdownEvent = new(this.windows.Count);
+                int count = this.windows.Count;
+                Storyboard?[] storyboards = new Storyboard?[count];
+                CountdownEvent countdownEvent = new(count);
 
-                for (int i = 0; i < this.windows.Count; i++)
+                for (int i = 0; i < count; i++)
                 {
                     ScreensaverWindow window = this.windows[i];
                     BitmapImage source = this.GetImage();
@@ -404,10 +405,11 @@ namespace WpfKenBurns
             storyboard.Duration = new(TimeSpan.FromSeconds(totalDuration));
 
             bool nextStarted = false;
+            TimeSpan durationToNext = TimeSpan.FromSeconds(duration + fadeDuration);
 
             storyboard.CurrentTimeInvalidated += (sender, args) =>
             {
-                if (!nextStarted && storyboard.GetCurrentTime() >= TimeSpan.FromSeconds(duration + fadeDuration))
+                if (!nextStarted && storyboard.GetCurrentTime() >= durationToNext)
                 {
                     nextStarted = true;
                     countdownEvent.Signal();
