@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:converters="clr-namespace:WpfKenBurns.Converters"
         mc:Ignorable="d"
-        Title="Ken Burns Screensaver Configuration" MinWidth="600" MinHeight="400" Width="600" Height="650.408" Loaded="Window_Loaded">
+        Title="Ken Burns Screensaver Configuration" MinWidth="600" MinHeight="500" Width="600" Height="600" Loaded="Window_Loaded">
     <Window.Resources>
         <converters:FloatToSecondsConverter x:Key="FloatToSecondsConverter"/>
         <converters:FloatToPercentConverter x:Key="FloatToPercentConverter"/>
@@ -13,7 +13,7 @@
     </Window.Resources>
     <Grid>
         <TextBlock Margin="10,10,0,0" Text="Image Sources" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <ListView x:Name="imageSourcesListView" Margin="10,31,10,404" SelectionMode="Single" SelectionChanged="FoldersListView_SelectionChanged" ItemsSource="{Binding Folders}">
+        <ListView x:Name="imageSourcesListView" Margin="10,31,10,374" SelectionMode="Single" SelectionChanged="FoldersListView_SelectionChanged" ItemsSource="{Binding Folders}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Path" Width="475">
@@ -35,11 +35,11 @@
             </ListView.View>
         </ListView>
 
-        <Button Content="Add Folder..." HorizontalAlignment="Left" Margin="10,0,0,379" VerticalAlignment="Bottom" Width="75" Click="AddFolderButton_Click"/>
-        <Button x:Name="removeSelectedFolderButton" Content="Remove Selected Folder" HorizontalAlignment="Left" Margin="90,0,0,379" VerticalAlignment="Bottom" Width="140" Click="RemoveFolderButton_Click" IsEnabled="False"/>
+        <Button Content="Add Folder..." HorizontalAlignment="Left" Margin="10,0,0,349" VerticalAlignment="Bottom" Width="75" Click="AddFolderButton_Click"/>
+        <Button x:Name="removeSelectedFolderButton" Content="Remove Selected Folder" HorizontalAlignment="Left" Margin="90,0,0,349" VerticalAlignment="Bottom" Width="140" Click="RemoveFolderButton_Click" IsEnabled="False"/>
 
-        <TextBlock Margin="10,0,0,347" HorizontalAlignment="Left" VerticalAlignment="Bottom" Text="Program Denylist"/>
-        <ListView x:Name="programDenylistListView" Margin="10,0,10,259" SelectionMode="Single" SelectionChanged="ProgramDenylistListView_SelectionChanged" Height="83" VerticalAlignment="Bottom" ItemsSource="{Binding ProgramDenylist}">
+        <TextBlock Margin="10,0,0,317" HorizontalAlignment="Left" VerticalAlignment="Bottom" Text="Program Denylist"/>
+        <ListView x:Name="programDenylistListView" Margin="10,0,10,229" SelectionMode="Single" SelectionChanged="ProgramDenylistListView_SelectionChanged" Height="83" VerticalAlignment="Bottom" ItemsSource="{Binding ProgramDenylist}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Path" Width="500">
@@ -52,10 +52,10 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Button Content="Add File..." HorizontalAlignment="Left" Margin="10,0,0,234" VerticalAlignment="Bottom" Width="75" Click="AddFileButton_Click"/>
-        <Button x:Name="removeSelectedFileButton" Content="Remove Selected File" HorizontalAlignment="Left" Margin="90,0,0,234" VerticalAlignment="Bottom" Width="140" Click="RemoveFileButton_Click" IsEnabled="False"/>
+        <Button Content="Add File..." HorizontalAlignment="Left" Margin="10,0,0,204" VerticalAlignment="Bottom" Width="75" Click="AddFileButton_Click"/>
+        <Button x:Name="removeSelectedFileButton" Content="Remove Selected File" HorizontalAlignment="Left" Margin="90,0,0,204" VerticalAlignment="Bottom" Width="140" Click="RemoveFileButton_Click" IsEnabled="False"/>
 
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,190">
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,160">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="*"/>
@@ -67,7 +67,7 @@
             <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding Duration, Converter={StaticResource FloatToSecondsConverter}}" Margin="5,0" Grid.Column="2"/>
         </Grid>
 
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,160">
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,130">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="*"/>
@@ -79,7 +79,7 @@
             <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding FadeDuration, Converter={StaticResource FloatToSecondsConverter}}" Margin="5,0" Grid.Column="2"/>
         </Grid>
 
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,130">
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,100">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="*"/>
@@ -91,7 +91,7 @@
             <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding MovementFactor, Converter={StaticResource FloatToPercentConverter}}" Margin="5,0" Grid.Column="2"/>
         </Grid>
 
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,100">
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,70">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="*"/>
@@ -101,18 +101,6 @@
             <TextBlock Text="Zoom" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0" ToolTip="How much the image should zoom in on itself while panning."/>
             <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding ScaleFactor}" Minimum="0" Maximum="0.5" LargeChange="0.1" SmallChange="0.01" TickPlacement="BottomRight" TickFrequency="0.1"/>
             <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding ScaleFactor, Converter={StaticResource FloatToPercentConverter}}" Margin="5,0" Grid.Column="2"/>
-        </Grid>
-
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,70">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="120"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock Text="Mouse Sensitivity" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextAlignment="Right" Grid.Column="0" Margin="5,0" ToolTip="How fast the mouse needs to be moved before the screensaver is closed."/>
-            <Slider HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Value="{Binding MouseSensitivity}" Minimum="0" Maximum="10" LargeChange="2" SmallChange="1" TickPlacement="BottomRight" TickFrequency="1"/>
-            <TextBox HorizontalAlignment="Right" VerticalAlignment="Top" Width="50" Text="{Binding MouseSensitivity}" Margin="5,0" Grid.Column="2"/>
         </Grid>
 
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="5,0,5,40">

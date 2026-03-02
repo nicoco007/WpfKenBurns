@@ -36,9 +36,6 @@ namespace WpfKenBurns
 
         private readonly IntPtr windowHandle;
         private readonly Configuration configuration;
-        private readonly bool isPreviewWindow = false;
-
-        private Point lastMousePosition = default;
 
         internal ScreensaverWindow(Configuration config, IntPtr previewHandle)
             : this(config)
@@ -54,8 +51,6 @@ namespace WpfKenBurns
             NativeMethods.GetClientRect(previewHandle, out RECT parentRect);
 
             NativeMethods.SetWindowPos(this.windowHandle, IntPtr.Zero, 0, 0, parentRect.Width, parentRect.Height, SetWindowPosFlags.ShowWindow);
-
-            this.isPreviewWindow = true;
         }
 
         internal ScreensaverWindow(Configuration config, RECT monitor)
@@ -108,48 +103,6 @@ namespace WpfKenBurns
             }
 
             return IntPtr.Zero;
-        }
-
-        private void Window_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (this.isPreviewWindow)
-            {
-                return;
-            }
-
-            Application.Current.Shutdown();
-        }
-
-        private void Window_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (this.isPreviewWindow)
-            {
-                return;
-            }
-
-            Point pos = e.GetPosition(this);
-
-            if (this.lastMousePosition != default)
-            {
-                int mouseSensitivity = 10 - this.configuration.MouseSensitivity;
-
-                if ((this.lastMousePosition - pos).Length > mouseSensitivity * 2)
-                {
-                    Application.Current.Shutdown();
-                }
-            }
-
-            this.lastMousePosition = pos;
-        }
-
-        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (this.isPreviewWindow)
-            {
-                return;
-            }
-
-            Application.Current.Shutdown();
         }
     }
 }

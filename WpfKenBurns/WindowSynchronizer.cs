@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -32,7 +33,7 @@ using WpfKenBurns.Native;
 
 namespace WpfKenBurns
 {
-    internal class WindowSynchronizer
+    internal partial class WindowSynchronizer
     {
         private static readonly string[] ValidImageExtensions = { ".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tif", ".tiff", ".wmp" };
 
@@ -40,6 +41,9 @@ namespace WpfKenBurns
         private readonly Random random = new();
 
         private readonly IntPtr handle;
+
+        private readonly long startTime;
+        private readonly Timer? timer;
 
         private Configuration? configuration;
         private CancellationTokenSource? cancellationTokenSource;
@@ -50,6 +54,10 @@ namespace WpfKenBurns
 
         public WindowSynchronizer()
         {
+            this.startTime = Environment.TickCount64;
+            this.timer = new Timer(this.OnTimerTick, null, 0, 100);
+
+            Application.Current.Exit += this.OnApplicationExit;
         }
 
         public WindowSynchronizer(IntPtr handle)
@@ -121,6 +129,20 @@ namespace WpfKenBurns
             };
         }
 
+        private static uint GetLastInputTime()
+        {
+            LASTINPUTINFO info = new();
+
+            if (!NativeMethods.GetLastInputInfo(ref info))
+            {
+                int error = Marshal.GetLastPInvokeError();
+                Debug.WriteLine($"GetLastInputInfo failed: Error {error}");
+                return 0;
+            }
+
+            return info.Time;
+        }
+
         private static Point GetPointOnRectangleFromAngle(double angle, double width, double height)
         {
             double max = Math.Sqrt(Math.Pow(width / 2, 2) + Math.Pow(height / 2, 2));
@@ -129,6 +151,12 @@ namespace WpfKenBurns
             double y = Math.Clamp(Math.Sin(angle) * max, -height / 2, height / 2);
 
             return new Point(x - width / 2, y - height / 2);
+        }
+
+        private void OnApplicationExit(object sender, ExitEventArgs e)
+        {
+            this.timer?.Dispose();
+            Application.Current.Exit -= this.OnApplicationExit;
         }
 
         private void EnumerateMonitors()
@@ -394,6 +422,17 @@ namespace WpfKenBurns
             storyboard.Freeze();
 
             return storyboard;
+        }
+
+        private void OnTimerTick(object? state)
+        {
+            uint time = GetLastInputTime();
+            long now = Environment.TickCount64;
+
+            if ((now - time) < (now - this.startTime))
+            {
+                Application.Current.Dispatcher.BeginInvoke(Application.Current.Shutdown);
+            }
         }
     }
 }
