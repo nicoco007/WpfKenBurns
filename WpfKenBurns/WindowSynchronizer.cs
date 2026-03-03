@@ -36,6 +36,7 @@ namespace WpfKenBurns
         private static readonly string[] ValidImageExtensions = [".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tif", ".tiff", ".wmp"];
 
         private readonly List<ScreensaverWindow> windows = [];
+        private readonly List<string> files = [];
         private readonly Random random = new();
 
         private readonly IntPtr handle;
@@ -48,12 +49,13 @@ namespace WpfKenBurns
         private Task? task;
         private bool resetting = false;
 
-        private RandomizedEnumerator<string>? fileEnumerator;
+        private readonly IEnumerator<string> randomFileEnumerator;
 
         public WindowSynchronizer()
         {
             startTime = Environment.TickCount64;
             timer = new Timer(OnTimerTick, null, 0, 100);
+            randomFileEnumerator = RandomFileEnumerator();
 
             Application.Current.Exit += OnApplicationExit;
         }
@@ -61,6 +63,7 @@ namespace WpfKenBurns
         public WindowSynchronizer(IntPtr handle)
         {
             this.handle = handle;
+            randomFileEnumerator = RandomFileEnumerator();
         }
 
         public void Start()
@@ -77,8 +80,6 @@ namespace WpfKenBurns
                 return;
             }
 
-            List<string> files = [];
-
             foreach (ScreensaverImageFolder folder in configuration.Folders)
             {
                 try
@@ -92,8 +93,6 @@ namespace WpfKenBurns
                     Debug.WriteLine(ex);
                 }
             }
-
-            fileEnumerator = new RandomizedEnumerator<string>(files);
 
             if (handle != IntPtr.Zero)
             {
@@ -282,15 +281,9 @@ namespace WpfKenBurns
 
         private BitmapImage GetImage()
         {
-            while (fileEnumerator!.Count > 0)
+            while (randomFileEnumerator.MoveNext())
             {
-                if (!fileEnumerator.MoveNext())
-                {
-                    fileEnumerator.Reset();
-                    fileEnumerator.MoveNext();
-                }
-
-                string filePath = fileEnumerator.Current;
+                string filePath = randomFileEnumerator.Current;
 
                 try
                 {
@@ -311,11 +304,22 @@ namespace WpfKenBurns
                 catch (Exception ex) when (ex is NotSupportedException or IOException)
                 {
                     Debug.WriteLine($"Failed to load '{filePath}'; removing from list\n{ex}");
-                    fileEnumerator.Remove(fileEnumerator.Current);
+                    files.Remove(randomFileEnumerator.Current);
                 }
             }
 
             throw new Exception("No images could be loaded");
+        }
+
+        private IEnumerator<string> RandomFileEnumerator()
+        {
+            while (files.Count > 0)
+            {
+                foreach (string file in files.Shuffle())
+                {
+                    yield return file;
+                }
+            }
         }
 
         private Storyboard CreateStoryboardAnimation(Panel container, Image image, Size imageSize, CountdownEvent countdownEvent)
