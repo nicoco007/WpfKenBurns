@@ -16,6 +16,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace WpfKenBurns.Native
 {
@@ -23,22 +24,38 @@ namespace WpfKenBurns.Native
     {
         internal delegate bool EnumMonitorsDelegate(IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData);
 
-        [DllImport("user32.dll")]
-        internal static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
+        [LibraryImport("user32.dll")]
+        [SupportedOSPlatform("windows")]
+        internal static partial IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
 
-        [DllImport("user32.dll")]
-        internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+        [SupportedOSPlatform("windows")]
+        internal static nint SetWindowLong(IntPtr hWnd, int nIndex, nint dwNewLong) => Environment.Is64BitProcess ? SetWindowLong64(hWnd, nIndex, dwNewLong) : SetWindowLong32(hWnd, nIndex, dwNewLong);
 
-        [DllImport("user32.dll")]
-        internal static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+        [LibraryImport("user32.dll", EntryPoint = "SetWindowLongA", SetLastError = true)]
+        [SupportedOSPlatform("windows")]
+        internal static partial nint SetWindowLong32(IntPtr hWnd, int nIndex, nint dwNewLong);
 
-        [DllImport("user32.dll")]
-        internal static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, EnumMonitorsDelegate lpfnEnum, IntPtr dwData);
+        [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrA", SetLastError = true)]
+        [SupportedOSPlatform("windows")]
+        internal static partial nint SetWindowLong64(IntPtr hWnd, int nIndex, nint dwNewLong);
 
-        [DllImport("user32.dll", SetLastError = true)]
-        internal static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowPosFlags uFlags);
+        [LibraryImport("user32.dll")]
+        [SupportedOSPlatform("windows")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+        [LibraryImport("user32.dll")]
+        [SupportedOSPlatform("windows")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip, EnumMonitorsDelegate lpfnEnum, IntPtr dwData);
 
         [LibraryImport("user32.dll", SetLastError = true)]
+        [SupportedOSPlatform("windows")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static partial bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowPosFlags uFlags);
+
+        [LibraryImport("user32.dll", SetLastError = true)]
+        [SupportedOSPlatform("windows")]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool GetLastInputInfo(ref LASTINPUTINFO plii);
     }
