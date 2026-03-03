@@ -17,15 +17,28 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 
 namespace WpfKenBurns
 {
     public partial class App : Application
     {
+        private Mutex? mutex;
+
         /// <inheritdoc/>
         protected override void OnStartup(StartupEventArgs e)
         {
+            mutex = new(true, "WpfKenBurns-a5e92dd9-5f91-4005-9667-0d6f8dc1bf4b", out bool createdNew);
+
+            if (!createdNew)
+            {
+                Shutdown();
+                return;
+            }
+
+            base.OnStartup(e);
+
             if (e.Args.Length >= 1)
             {
                 string mode = e.Args[0].Trim().ToLower(CultureInfo.InvariantCulture);
@@ -51,6 +64,15 @@ namespace WpfKenBurns
 
             ConfigurationWindow window = new();
             window.Show();
+        }
+
+        /// <inheritdoc/>
+        protected override void OnExit(ExitEventArgs e)
+        {
+            mutex?.ReleaseMutex();
+            mutex?.Dispose();
+
+            base.OnExit(e);
         }
     }
 }
