@@ -40,9 +40,9 @@ namespace WpfKenBurns
                 {
                     string? strHandle = e.Args.Length >= 2 ? e.Args[1] : mode.Split(':').ElementAtOrDefault(1);
 
-                    if (int.TryParse(strHandle, out int intHandle))
+                    if (IntPtr.TryParse(strHandle, out IntPtr handle))
                     {
-                        WindowSynchronizer sync = new(new IntPtr(intHandle));
+                        WindowSynchronizer sync = new(handle);
                         sync.Start();
                         return;
                     }
