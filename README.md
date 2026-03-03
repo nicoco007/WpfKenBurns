@@ -9,7 +9,6 @@ A simple, no-nonsense image screensaver for Windows inspired by macOS's Ken Burn
 * Images can be sourced from many different folders
 * Supports high DPI monitors and scaling
 * Supports monitor hotplugging (useful for DisplayPort monitors)
-* Program denylist to prevent the screensaver from running when certain programs are open
 
 ## Installing
 Get [the latest build (usually stable)](https://nightly.link/nicoco007/WpfKenBurns/workflows/build/main/WpfKenBurns.zip) and copy it into `C:\Windows\System32` to install it system-wide. You will need to install the [.NET Desktop Runtime 10](https://aka.ms/dotnet/10.0/windowsdesktop-runtime-win-x64.exe) if you do not already have it.

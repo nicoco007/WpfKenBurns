@@ -79,18 +79,6 @@ namespace WpfKenBurns
                 return;
             }
 
-            foreach (string filePath in this.configuration.ProgramDenylist)
-            {
-                string fullPath = Path.GetFullPath(filePath);
-                Process[] processes = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(filePath));
-
-                if (processes.Any(p => !string.IsNullOrEmpty(p.MainModule?.FileName) && Path.GetFullPath(p.MainModule.FileName) == fullPath))
-                {
-                    Application.Current.Shutdown();
-                    return;
-                }
-            }
-
             List<string> files = new();
 
             foreach (ScreensaverImageFolder folder in this.configuration.Folders)

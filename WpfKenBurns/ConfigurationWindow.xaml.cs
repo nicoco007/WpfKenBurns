@@ -169,32 +169,12 @@ namespace WpfKenBurns
                 {
                     return;
                 }
-
-                this.configuration.ProgramDenylist.Add(dialog.FileName);
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
                 MessageBox.Show("Failed to load folder browser");
             }
-        }
-
-        private void RemoveFileButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.configuration == null)
-            {
-                return;
-            }
-
-            if (this.programDenylistListView.SelectedIndex >= 0)
-            {
-                this.configuration.ProgramDenylist.RemoveAt(this.programDenylistListView.SelectedIndex);
-            }
-        }
-
-        private void ProgramDenylistListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            this.removeSelectedFileButton.IsEnabled = e.AddedItems.Count > 0;
         }
     }
 }

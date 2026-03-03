@@ -38,9 +38,7 @@ namespace WpfKenBurns
         private float fadeDuration = 1.5f;
         private float movementFactor = 0.05f;
         private float scaleFactor = 0.05f;
-        private byte mouseSensitivity = 8;
         private BitmapScalingMode quality = BitmapScalingMode.HighQuality;
-        private ObservableCollection<string> programDenylist = new();
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -119,21 +117,6 @@ namespace WpfKenBurns
             }
         }
 
-        public byte MouseSensitivity
-        {
-            get => this.mouseSensitivity;
-            set
-            {
-                if (this.mouseSensitivity == value)
-                {
-                    return;
-                }
-
-                this.mouseSensitivity = Math.Clamp(value, (byte)0, (byte)10);
-                this.NotifyPropertyChanged();
-            }
-        }
-
         public BitmapScalingMode Quality
         {
             get => this.quality;
@@ -145,21 +128,6 @@ namespace WpfKenBurns
                 }
 
                 this.quality = value;
-                this.NotifyPropertyChanged();
-            }
-        }
-
-        public ObservableCollection<string> ProgramDenylist
-        {
-            get => this.programDenylist;
-            set
-            {
-                if (this.programDenylist == value)
-                {
-                    return;
-                }
-
-                this.programDenylist = value;
                 this.NotifyPropertyChanged();
             }
         }
@@ -181,7 +149,7 @@ namespace WpfKenBurns
             writer.Write(configuration.FadeDuration);
             writer.Write(configuration.MovementFactor);
             writer.Write(configuration.ScaleFactor);
-            writer.Write(configuration.MouseSensitivity);
+            writer.Write(0);
             writer.Write((byte)configuration.Quality);
 
             writer.Write(configuration.Folders.Count);
@@ -192,12 +160,7 @@ namespace WpfKenBurns
                 writer.Write(folder.Recursive);
             }
 
-            writer.Write(configuration.ProgramDenylist.Count);
-
-            foreach (string filePath in configuration.ProgramDenylist)
-            {
-                writer.Write(filePath);
-            }
+            writer.Write(0);
         }
 
         public static Configuration Load()
@@ -234,7 +197,7 @@ namespace WpfKenBurns
             configuration.FadeDuration = reader.ReadSingle();
             configuration.MovementFactor = reader.ReadSingle();
             configuration.ScaleFactor = reader.ReadSingle();
-            configuration.MouseSensitivity = reader.ReadByte();
+            reader.ReadByte();
             configuration.Quality = (BitmapScalingMode)reader.ReadByte();
 
             int count = reader.ReadInt32();
@@ -248,7 +211,7 @@ namespace WpfKenBurns
 
             for (int i = 0; i < count; i++)
             {
-                configuration.ProgramDenylist.Add(reader.ReadString());
+                reader.ReadString();
             }
 
             return configuration;
