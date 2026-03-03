@@ -16,6 +16,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using Ookii.Dialogs.Wpf;
 
@@ -68,14 +69,25 @@ namespace WpfKenBurns
 
             try
             {
-                VistaFolderBrowserDialog dialog = new();
+                VistaFolderBrowserDialog dialog = new()
+                {
+                    Multiselect = true,
+                };
 
-                if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.SelectedPath))
+                if (dialog.ShowDialog() != true)
                 {
                     return;
                 }
 
-                configuration.Folders.Add(new ScreensaverImageFolder(dialog.SelectedPath, false));
+                foreach (string folder in dialog.SelectedPaths)
+                {
+                    if (configuration.Folders.Any(f => f.Path == folder))
+                    {
+                        continue;
+                    }
+
+                    configuration.Folders.Add(new ScreensaverImageFolder(folder, false));
+                }
             }
             catch (Exception ex)
             {
@@ -136,9 +148,9 @@ namespace WpfKenBurns
                 return;
             }
 
-            if (imageSourcesListView.SelectedIndex >= 0)
+            foreach (ScreensaverImageFolder folder in imageSourcesListView.SelectedItems.Cast<ScreensaverImageFolder>().ToList())
             {
-                configuration.Folders.RemoveAt(imageSourcesListView.SelectedIndex);
+                configuration.Folders.Remove(folder);
             }
         }
 

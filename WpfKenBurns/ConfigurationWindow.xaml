@@ -13,7 +13,7 @@
     </Window.Resources>
     <Grid>
         <TextBlock Margin="10,10,0,0" Text="Image Sources" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-        <ListView x:Name="imageSourcesListView" Margin="10,31,10,231" SelectionMode="Single" SelectionChanged="FoldersListView_SelectionChanged" ItemsSource="{Binding Folders}">
+        <ListView x:Name="imageSourcesListView" Margin="10,31,10,231" SelectionMode="Extended" SelectionChanged="FoldersListView_SelectionChanged" ItemsSource="{Binding Folders}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="Path" Width="475">
