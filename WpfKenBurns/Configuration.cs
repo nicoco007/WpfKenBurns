@@ -20,117 +20,120 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
+using ProtoBuf;
+using ProtoBuf.Meta;
 
 namespace WpfKenBurns
 {
+    [ProtoContract(UseProtoMembersOnly = true)]
     internal class Configuration : INotifyPropertyChanged
     {
-        private static readonly byte[] Magic = { 0x54, 0x7d, 0x1d, 0x74 };
-        private static readonly byte Revision = 1;
         private static readonly string ConfigurationFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WpfKenBurns");
         private static readonly string ConfigurationFile = Path.Combine(ConfigurationFolder, "config");
 
-        private ObservableCollection<ScreensaverImageFolder> folders = new();
-        private float duration = 7;
-        private float fadeDuration = 1.5f;
-        private float movementFactor = 0.05f;
-        private float scaleFactor = 0.05f;
-        private BitmapScalingMode quality = BitmapScalingMode.HighQuality;
+        private static readonly RuntimeTypeModel RuntimeTypeModel = RuntimeTypeModel.Default;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+#pragma warning disable SA1500, SA1513
+        [ProtoMember(1)]
         public ObservableCollection<ScreensaverImageFolder> Folders
         {
-            get => this.folders;
+            get;
             set
             {
-                if (this.folders == value)
+                if (field == value)
                 {
                     return;
                 }
 
-                this.folders = value;
+                field = value;
                 this.NotifyPropertyChanged();
             }
-        }
+        } = [];
 
+        [ProtoMember(2)]
         public float Duration
         {
-            get => this.duration;
+            get;
             set
             {
-                if (this.duration == value)
+                if (field == value)
                 {
                     return;
                 }
 
-                this.duration = Math.Clamp(value, 1, 30);
+                field = Math.Clamp(value, 1, 30);
                 this.NotifyPropertyChanged();
             }
-        }
+        } = 7;
 
+        [ProtoMember(3)]
         public float FadeDuration
         {
-            get => this.fadeDuration;
+            get;
             set
             {
-                if (this.fadeDuration == value)
+                if (field == value)
                 {
                     return;
                 }
 
-                this.fadeDuration = Math.Clamp(value, 0.5f, 30);
+                field = Math.Clamp(value, 0.5f, 30);
                 this.NotifyPropertyChanged();
             }
-        }
+        } = 1.5f;
 
+        [ProtoMember(4)]
         public float MovementFactor
         {
-            get => this.movementFactor;
+            get;
             set
             {
-                if (this.movementFactor == value)
+                if (field == value)
                 {
                     return;
                 }
 
-                this.movementFactor = Math.Clamp(value, 0, 1);
+                field = Math.Clamp(value, 0, 1);
                 this.NotifyPropertyChanged();
             }
-        }
+        } = 0.05f;
 
+        [ProtoMember(5)]
         public float ScaleFactor
         {
-            get => this.scaleFactor;
+            get;
             set
             {
-                if (this.scaleFactor == value)
+                if (field == value)
                 {
                     return;
                 }
 
-                this.scaleFactor = Math.Clamp(value, 0, 1);
+                field = Math.Clamp(value, 0, 1);
                 this.NotifyPropertyChanged();
             }
-        }
+        } = 0.05f;
 
+        [ProtoMember(6)]
         public BitmapScalingMode Quality
         {
-            get => this.quality;
+            get;
             set
             {
-                if (this.quality == value)
+                if (field == value)
                 {
                     return;
                 }
 
-                this.quality = value;
+                field = value;
                 this.NotifyPropertyChanged();
             }
-        }
+        } = BitmapScalingMode.HighQuality;
+#pragma warning restore SA1500, SA1513
 
         public static void Save(Configuration configuration)
         {
@@ -139,82 +142,26 @@ namespace WpfKenBurns
                 Directory.CreateDirectory(ConfigurationFolder);
             }
 
-            using FileStream fileStream = new(ConfigurationFile, FileMode.Create, FileAccess.Write);
-            using BinaryWriter writer = new(fileStream);
+            using FileStream fileStream = File.Create(ConfigurationFile);
 
-            writer.Write(Magic);
-            writer.Write(Revision);
-
-            writer.Write(configuration.Duration);
-            writer.Write(configuration.FadeDuration);
-            writer.Write(configuration.MovementFactor);
-            writer.Write(configuration.ScaleFactor);
-            writer.Write(0);
-            writer.Write((byte)configuration.Quality);
-
-            writer.Write(configuration.Folders.Count);
-
-            foreach (ScreensaverImageFolder folder in configuration.Folders)
-            {
-                writer.Write(folder.Path);
-                writer.Write(folder.Recursive);
-            }
-
-            writer.Write(0);
+            RuntimeTypeModel.Serialize(fileStream, configuration);
         }
 
         public static Configuration Load()
         {
-            Configuration configuration = new();
-
             if (!Directory.Exists(ConfigurationFolder))
             {
                 Directory.CreateDirectory(ConfigurationFolder);
             }
 
-            using FileStream fileStream = new(ConfigurationFile, FileMode.OpenOrCreate, FileAccess.Read);
-
-            if (fileStream.Length == 0)
+            if (!File.Exists(ConfigurationFile))
             {
-                return configuration;
+                return new Configuration();
             }
 
-            using BinaryReader reader = new(fileStream);
+            using FileStream fileStream = File.OpenRead(ConfigurationFile);
 
-            if (!reader.ReadBytes(Magic.Length).SequenceEqual(Magic))
-            {
-                throw new InvalidDataException("Unknown file format");
-            }
-
-            byte revision = reader.ReadByte();
-
-            if (revision != Revision)
-            {
-                throw new InvalidDataException("Unexpected file version " + revision);
-            }
-
-            configuration.Duration = reader.ReadSingle();
-            configuration.FadeDuration = reader.ReadSingle();
-            configuration.MovementFactor = reader.ReadSingle();
-            configuration.ScaleFactor = reader.ReadSingle();
-            reader.ReadByte();
-            configuration.Quality = (BitmapScalingMode)reader.ReadByte();
-
-            int count = reader.ReadInt32();
-
-            for (int i = 0; i < count; i++)
-            {
-                configuration.Folders.Add(new ScreensaverImageFolder(reader.ReadString(), reader.ReadBoolean()));
-            }
-
-            count = reader.ReadInt32();
-
-            for (int i = 0; i < count; i++)
-            {
-                reader.ReadString();
-            }
-
-            return configuration;
+            return RuntimeTypeModel.Deserialize<Configuration>(fileStream);
         }
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")

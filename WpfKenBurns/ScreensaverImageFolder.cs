@@ -16,9 +16,9 @@
 // along with this program.If not, see&lt;https://www.gnu.org/licenses/&gt;.
 // </copyright>
 
-using System;
+using ProtoBuf;
 
 namespace WpfKenBurns
 {
-    internal record ScreensaverImageFolder(string Path, bool Recursive);
+    internal record ScreensaverImageFolder([property: ProtoMember(1)] string Path, [property: ProtoMember(2)] bool Recursive);
 }
