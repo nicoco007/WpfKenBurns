@@ -146,31 +146,5 @@ namespace WpfKenBurns
         {
             removeSelectedFolderButton.IsEnabled = e.AddedItems.Count > 0;
         }
-
-        private void AddFileButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (configuration == null)
-            {
-                return;
-            }
-
-            try
-            {
-                VistaOpenFileDialog dialog = new()
-                {
-                    Filter = "Executable Files (*.exe)|*.exe"
-                };
-
-                if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.FileName))
-                {
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
-                MessageBox.Show("Failed to load folder browser");
-            }
-        }
     }
 }
