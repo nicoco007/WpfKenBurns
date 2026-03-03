@@ -1,6 +1,5 @@
-﻿// <copyright file="ConfigurationWindow.xaml.cs" company="PlaceholderCompany">
-// WpfKenBurns - A simple Ken Burns-style screensaver
-// Copyright © 2019-2022 Nicolas Gnyra
+﻿// WpfKenBurns - A simple Ken Burns-style screensaver
+// Copyright © 2019-2026 Nicolas Gnyra
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -8,13 +7,12 @@
 // (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 //
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.If not, see&lt;https://www.gnu.org/licenses/&gt;.
-// </copyright>
+// along with this program.If not, see https://www.gnu.org/licenses/.
 
 using System;
 using System.Diagnostics;
@@ -28,45 +26,42 @@ namespace WpfKenBurns
         private Configuration? configuration;
         private bool changed;
 
+        /// <inheritdoc/>
         public ConfigurationWindow()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         private void UpdateConfiguration(Configuration config)
         {
-            if (this.configuration != null)
-            {
-                this.configuration.PropertyChanged -= this.OnConfigurationPropertyChanged;
-            }
-
-            this.configuration = config;
-            this.DataContext = config;
-            config.PropertyChanged += this.OnConfigurationPropertyChanged;
+            configuration?.PropertyChanged -= OnConfigurationPropertyChanged;
+            configuration = config;
+            DataContext = config;
+            config.PropertyChanged += OnConfigurationPropertyChanged;
         }
 
         private void OnConfigurationPropertyChanged(object? sender, EventArgs e)
         {
-            this.changed = true;
+            changed = true;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
-                this.UpdateConfiguration(Configuration.Load());
+                UpdateConfiguration(Configuration.Load());
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message + "\r\n" + ex.StackTrace);
                 MessageBox.Show("Failed to load configuration: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                this.UpdateConfiguration(new Configuration());
+                UpdateConfiguration(new Configuration());
             }
         }
 
         private void AddFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.configuration == null)
+            if (configuration == null)
             {
                 return;
             }
@@ -80,7 +75,7 @@ namespace WpfKenBurns
                     return;
                 }
 
-                this.configuration.Folders.Add(new ScreensaverImageFolder(dialog.SelectedPath, false));
+                configuration.Folders.Add(new ScreensaverImageFolder(dialog.SelectedPath, false));
             }
             catch (Exception ex)
             {
@@ -91,15 +86,15 @@ namespace WpfKenBurns
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.configuration == null)
+            if (configuration == null)
             {
                 return;
             }
 
             try
             {
-                Configuration.Save(this.configuration);
-                this.Close();
+                Configuration.Save(configuration);
+                Close();
             }
             catch (Exception ex)
             {
@@ -114,14 +109,14 @@ namespace WpfKenBurns
 
             if (result == MessageBoxResult.Yes)
             {
-                this.UpdateConfiguration(new Configuration());
-                this.changed = true;
+                UpdateConfiguration(new Configuration());
+                changed = true;
             }
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.changed)
+            if (changed)
             {
                 MessageBoxResult result = MessageBox.Show("Are you sure you want to quit? Any changes will be lost.", "Are you sure?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
 
@@ -131,39 +126,40 @@ namespace WpfKenBurns
                 }
             }
 
-            this.Close();
+            Close();
         }
 
         private void RemoveFolderButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.configuration == null)
+            if (configuration == null)
             {
                 return;
             }
 
-            if (this.imageSourcesListView.SelectedIndex >= 0)
+            if (imageSourcesListView.SelectedIndex >= 0)
             {
-                this.configuration.Folders.RemoveAt(this.imageSourcesListView.SelectedIndex);
+                configuration.Folders.RemoveAt(imageSourcesListView.SelectedIndex);
             }
         }
 
         private void FoldersListView_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            this.removeSelectedFolderButton.IsEnabled = e.AddedItems.Count > 0;
+            removeSelectedFolderButton.IsEnabled = e.AddedItems.Count > 0;
         }
 
         private void AddFileButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.configuration == null)
+            if (configuration == null)
             {
                 return;
             }
 
             try
             {
-                VistaOpenFileDialog dialog = new();
-
-                dialog.Filter = "Executable Files (*.exe)|*.exe";
+                VistaOpenFileDialog dialog = new()
+                {
+                    Filter = "Executable Files (*.exe)|*.exe"
+                };
 
                 if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.FileName))
                 {

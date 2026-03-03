@@ -1,6 +1,5 @@
-﻿// <copyright file="RECT.cs" company="PlaceholderCompany">
-// WpfKenBurns - A simple Ken Burns-style screensaver
-// Copyright © 2019-2022 Nicolas Gnyra
+﻿// WpfKenBurns - A simple Ken Burns-style screensaver
+// Copyright © 2019-2026 Nicolas Gnyra
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -8,13 +7,12 @@
 // (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 //
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.If not, see&lt;https://www.gnu.org/licenses/&gt;.
-// </copyright>
+// along with this program.If not, see https://www.gnu.org/licenses/.
 
 using System.Runtime.InteropServices;
 
@@ -30,10 +28,10 @@ namespace WpfKenBurns.Native
 
         public RECT(int left, int top, int right, int bottom)
         {
-            this.Left = left;
-            this.Top = top;
-            this.Right = right;
-            this.Bottom = bottom;
+            Left = left;
+            Top = top;
+            Right = right;
+            Bottom = bottom;
         }
 
         public RECT(System.Drawing.Rectangle r)
@@ -43,53 +41,53 @@ namespace WpfKenBurns.Native
 
         public int X
         {
-            get => this.Left;
+            readonly get => Left;
             set
             {
-                this.Right -= this.Left - value;
-                this.Left = value;
+                Right -= Left - value;
+                Left = value;
             }
         }
 
         public int Y
         {
-            get => this.Top;
+            readonly get => Top;
             set
             {
-                this.Bottom -= this.Top - value;
-                this.Top = value;
+                Bottom -= Top - value;
+                Top = value;
             }
         }
 
         public int Height
         {
-            get => this.Bottom - this.Top;
-            set => this.Bottom = value + this.Top;
+            readonly get => Bottom - Top;
+            set => Bottom = value + Top;
         }
 
         public int Width
         {
-            get => this.Right - this.Left;
-            set => this.Right = value + this.Left;
+            readonly get => Right - Left;
+            set => Right = value + Left;
         }
 
         public System.Drawing.Point Location
         {
-            get => new System.Drawing.Point(this.Left, this.Top);
+            readonly get => new(Left, Top);
             set
             {
-                this.X = value.X;
-                this.Y = value.Y;
+                X = value.X;
+                Y = value.Y;
             }
         }
 
         public System.Drawing.Size Size
         {
-            get => new System.Drawing.Size(this.Width, this.Height);
+            readonly get => new(Width, Height);
             set
             {
-                this.Width = value.Width;
-                this.Height = value.Height;
+                Width = value.Width;
+                Height = value.Height;
             }
         }
 
@@ -113,33 +111,33 @@ namespace WpfKenBurns.Native
             return !r1.Equals(r2);
         }
 
-        public bool Equals(RECT r)
+        public readonly bool Equals(RECT r)
         {
-            return r.Left == this.Left && r.Top == this.Top && r.Right == this.Right && r.Bottom == this.Bottom;
+            return r.Left == Left && r.Top == Top && r.Right == Right && r.Bottom == Bottom;
         }
 
-        public override bool Equals(object? obj)
+        public override readonly bool Equals(object? obj)
         {
             if (obj is RECT rect)
             {
-                return this.Equals(rect);
+                return Equals(rect);
             }
             else if (obj is System.Drawing.Rectangle rectangle)
             {
-                return this.Equals(new RECT(rectangle));
+                return Equals(new RECT(rectangle));
             }
 
             return false;
         }
 
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return ((System.Drawing.Rectangle)this).GetHashCode();
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
-            return string.Format(System.Globalization.CultureInfo.CurrentCulture, "{{Left={0},Top={1},Right={2},Bottom={3}}}", this.Left, this.Top, this.Right, this.Bottom);
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture, "{{Left={0},Top={1},Right={2},Bottom={3}}}", Left, Top, Right, Bottom);
         }
     }
 }

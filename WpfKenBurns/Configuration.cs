@@ -1,6 +1,5 @@
-﻿// <copyright file="Configuration.cs" company="PlaceholderCompany">
-// WpfKenBurns - A simple Ken Burns-style screensaver
-// Copyright © 2019-2022 Nicolas Gnyra
+﻿// WpfKenBurns - A simple Ken Burns-style screensaver
+// Copyright © 2019-2026 Nicolas Gnyra
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -8,13 +7,12 @@
 // (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 //
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.If not, see&lt;https://www.gnu.org/licenses/&gt;.
-// </copyright>
+// along with this program.If not, see https://www.gnu.org/licenses/.
 
 using System;
 using System.Collections.ObjectModel;
@@ -37,7 +35,6 @@ namespace WpfKenBurns
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-#pragma warning disable SA1500, SA1513
         [ProtoMember(1)]
         public ObservableCollection<ScreensaverImageFolder> Folders
         {
@@ -50,7 +47,7 @@ namespace WpfKenBurns
                 }
 
                 field = value;
-                this.NotifyPropertyChanged();
+                NotifyPropertyChanged();
             }
         } = [];
 
@@ -66,7 +63,7 @@ namespace WpfKenBurns
                 }
 
                 field = Math.Clamp(value, 1, 30);
-                this.NotifyPropertyChanged();
+                NotifyPropertyChanged();
             }
         } = 7;
 
@@ -82,7 +79,7 @@ namespace WpfKenBurns
                 }
 
                 field = Math.Clamp(value, 0.5f, 30);
-                this.NotifyPropertyChanged();
+                NotifyPropertyChanged();
             }
         } = 1.5f;
 
@@ -98,7 +95,7 @@ namespace WpfKenBurns
                 }
 
                 field = Math.Clamp(value, 0, 1);
-                this.NotifyPropertyChanged();
+                NotifyPropertyChanged();
             }
         } = 0.05f;
 
@@ -114,7 +111,7 @@ namespace WpfKenBurns
                 }
 
                 field = Math.Clamp(value, 0, 1);
-                this.NotifyPropertyChanged();
+                NotifyPropertyChanged();
             }
         } = 0.05f;
 
@@ -130,10 +127,9 @@ namespace WpfKenBurns
                 }
 
                 field = value;
-                this.NotifyPropertyChanged();
+                NotifyPropertyChanged();
             }
         } = BitmapScalingMode.HighQuality;
-#pragma warning restore SA1500, SA1513
 
         public static void Save(Configuration configuration)
         {
@@ -166,7 +162,7 @@ namespace WpfKenBurns
 
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

@@ -1,6 +1,5 @@
-﻿// <copyright file="ScreensaverWindow.xaml.cs" company="PlaceholderCompany">
-// WpfKenBurns - A simple Ken Burns-style screensaver
-// Copyright © 2019-2022 Nicolas Gnyra
+﻿// WpfKenBurns - A simple Ken Burns-style screensaver
+// Copyright © 2019-2026 Nicolas Gnyra
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -8,13 +7,12 @@
 // (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 //
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.If not, see&lt;https://www.gnu.org/licenses/&gt;.
-// </copyright>
+// along with this program.If not, see https://www.gnu.org/licenses/.
 
 using System;
 using System.Windows;
@@ -41,36 +39,36 @@ namespace WpfKenBurns
             : this(config)
         {
             // Set the preview window as the parent of this window
-            NativeMethods.SetParent(this.windowHandle, previewHandle);
+            NativeMethods.SetParent(windowHandle, previewHandle);
 
             // Make this a child window so it will close when the parent dialog closes
             // GWL_STYLE = -16, WS_CHILD = 0x40000000
-            NativeMethods.SetWindowLong(this.windowHandle, -16, 0x40000000);
+            NativeMethods.SetWindowLong(windowHandle, -16, 0x40000000);
 
             // Place our window inside the parent
             NativeMethods.GetClientRect(previewHandle, out RECT parentRect);
 
-            NativeMethods.SetWindowPos(this.windowHandle, IntPtr.Zero, 0, 0, parentRect.Width, parentRect.Height, SetWindowPosFlags.ShowWindow);
+            NativeMethods.SetWindowPos(windowHandle, IntPtr.Zero, 0, 0, parentRect.Width, parentRect.Height, SetWindowPosFlags.ShowWindow);
         }
 
         internal ScreensaverWindow(Configuration config, RECT monitor)
             : this(config)
         {
-            this.Topmost = true;
-            this.Cursor = Cursors.None;
+            Topmost = true;
+            Cursor = Cursors.None;
 
-            NativeMethods.SetWindowPos(this.windowHandle, IntPtr.Zero, monitor.X, monitor.Y, monitor.Width, monitor.Height, SetWindowPosFlags.ShowWindow);
+            NativeMethods.SetWindowPos(windowHandle, IntPtr.Zero, monitor.X, monitor.Y, monitor.Width, monitor.Height, SetWindowPosFlags.ShowWindow);
         }
 
         private ScreensaverWindow(Configuration config)
         {
-            this.InitializeComponent();
-            this.configuration = config;
-            this.windowHandle = new WindowInteropHelper(this).EnsureHandle();
+            InitializeComponent();
+            configuration = config;
+            windowHandle = new WindowInteropHelper(this).EnsureHandle();
 
-            HwndSource source = HwndSource.FromHwnd(this.windowHandle);
+            HwndSource source = HwndSource.FromHwnd(windowHandle);
 
-            source.AddHook(this.WndProc);
+            source.AddHook(WndProc);
         }
 
         internal event Action? DisplayChanged;
@@ -88,9 +86,9 @@ namespace WpfKenBurns
                 Height = size.Height,
             };
 
-            RenderOptions.SetBitmapScalingMode(image, this.configuration.Quality);
+            RenderOptions.SetBitmapScalingMode(image, configuration.Quality);
 
-            this.grid.Children.Add(image);
+            grid.Children.Add(image);
 
             return image;
         }
@@ -99,7 +97,7 @@ namespace WpfKenBurns
         {
             if (msg == WindowMessageDisplayChange)
             {
-                this.DisplayChanged?.Invoke();
+                DisplayChanged?.Invoke();
             }
 
             return IntPtr.Zero;

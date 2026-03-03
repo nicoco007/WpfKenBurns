@@ -1,6 +1,5 @@
-﻿// <copyright file="FloatToSecondsConverter.cs" company="PlaceholderCompany">
-// WpfKenBurns - A simple Ken Burns-style screensaver
-// Copyright © 2019-2022 Nicolas Gnyra
+﻿// WpfKenBurns - A simple Ken Burns-style screensaver
+// Copyright © 2019-2026 Nicolas Gnyra
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -8,13 +7,12 @@
 // (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 //
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.If not, see&lt;https://www.gnu.org/licenses/&gt;.
-// </copyright>
+// along with this program.If not, see https://www.gnu.org/licenses/.
 
 using System;
 using System.Globalization;
@@ -32,12 +30,7 @@ namespace WpfKenBurns.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (float.TryParse(value as string, out float result))
-            {
-                return result;
-            }
-
-            return DependencyProperty.UnsetValue;
+            return float.TryParse(value as string, out float result) ? result : DependencyProperty.UnsetValue;
         }
     }
 }

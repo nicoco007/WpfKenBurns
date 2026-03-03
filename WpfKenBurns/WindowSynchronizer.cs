@@ -1,6 +1,5 @@
-﻿// <copyright file="WindowSynchronizer.cs" company="PlaceholderCompany">
-// WpfKenBurns - A simple Ken Burns-style screensaver
-// Copyright © 2019-2022 Nicolas Gnyra
+﻿// WpfKenBurns - A simple Ken Burns-style screensaver
+// Copyright © 2019-2026 Nicolas Gnyra
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -8,13 +7,12 @@
 // (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 //
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.If not, see&lt;https://www.gnu.org/licenses/&gt;.
-// </copyright>
+// along with this program.If not, see https://www.gnu.org/licenses/.
 
 using System;
 using System.Collections.Generic;
@@ -35,9 +33,9 @@ namespace WpfKenBurns
 {
     internal partial class WindowSynchronizer
     {
-        private static readonly string[] ValidImageExtensions = { ".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tif", ".tiff", ".wmp" };
+        private static readonly string[] ValidImageExtensions = [".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tif", ".tiff", ".wmp"];
 
-        private readonly List<ScreensaverWindow> windows = new();
+        private readonly List<ScreensaverWindow> windows = [];
         private readonly Random random = new();
 
         private readonly IntPtr handle;
@@ -54,10 +52,10 @@ namespace WpfKenBurns
 
         public WindowSynchronizer()
         {
-            this.startTime = Environment.TickCount64;
-            this.timer = new Timer(this.OnTimerTick, null, 0, 100);
+            startTime = Environment.TickCount64;
+            timer = new Timer(OnTimerTick, null, 0, 100);
 
-            Application.Current.Exit += this.OnApplicationExit;
+            Application.Current.Exit += OnApplicationExit;
         }
 
         public WindowSynchronizer(IntPtr handle)
@@ -69,7 +67,7 @@ namespace WpfKenBurns
         {
             try
             {
-                this.configuration = Configuration.Load();
+                configuration = Configuration.Load();
             }
             catch (Exception ex)
             {
@@ -79,9 +77,9 @@ namespace WpfKenBurns
                 return;
             }
 
-            List<string> files = new();
+            List<string> files = [];
 
-            foreach (ScreensaverImageFolder folder in this.configuration.Folders)
+            foreach (ScreensaverImageFolder folder in configuration.Folders)
             {
                 try
                 {
@@ -95,25 +93,25 @@ namespace WpfKenBurns
                 }
             }
 
-            this.fileEnumerator = new RandomizedEnumerator<string>(files);
+            fileEnumerator = new RandomizedEnumerator<string>(files);
 
-            if (this.handle != IntPtr.Zero)
+            if (handle != IntPtr.Zero)
             {
-                ScreensaverWindow window = new(this.configuration, this.handle);
+                ScreensaverWindow window = new(configuration, handle);
                 window.Show();
-                this.windows.Add(window);
-                this.StartWorker();
+                windows.Add(window);
+                StartWorker();
             }
             else
             {
                 Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
-                this.EnumerateMonitors();
+                EnumerateMonitors();
             }
 
             Application.Current.Exit += (sender, e) =>
             {
-                this.cancellationTokenSource?.Cancel();
-                this.cancellationTokenSource?.Dispose();
+                cancellationTokenSource?.Cancel();
+                cancellationTokenSource?.Dispose();
             };
         }
 
@@ -143,68 +141,68 @@ namespace WpfKenBurns
 
         private void OnApplicationExit(object sender, ExitEventArgs e)
         {
-            this.timer?.Dispose();
-            Application.Current.Exit -= this.OnApplicationExit;
+            timer?.Dispose();
+            Application.Current.Exit -= OnApplicationExit;
         }
 
         private void EnumerateMonitors()
         {
-            if (this.resetting)
+            if (resetting)
             {
                 return;
             }
 
-            if (this.configuration == null)
+            if (configuration == null)
             {
                 return;
             }
 
-            this.resetting = true;
-            this.StopWorker();
+            resetting = true;
+            StopWorker();
 
-            foreach (Window window in this.windows)
+            foreach (Window window in windows)
             {
                 window.Close();
             }
 
-            this.windows.Clear();
+            windows.Clear();
 
             NativeMethods.EnumDisplayMonitors(
                 IntPtr.Zero,
                 IntPtr.Zero,
                 (IntPtr hMonitor, IntPtr hdcMonitor, ref RECT lprcMonitor, IntPtr dwData) =>
                 {
-                    ScreensaverWindow window = new(this.configuration, lprcMonitor);
+                    ScreensaverWindow window = new(configuration, lprcMonitor);
                     window.Show();
-                    this.windows.Add(window);
-                    window.DisplayChanged += this.OnDisplayChanged;
+                    windows.Add(window);
+                    window.DisplayChanged += OnDisplayChanged;
                     return true;
                 },
                 IntPtr.Zero);
 
-            this.StartWorker();
+            StartWorker();
 
-            this.resetting = false;
+            resetting = false;
         }
 
         private void OnDisplayChanged()
         {
-            this.EnumerateMonitors();
+            EnumerateMonitors();
         }
 
         private void StopWorker()
         {
-            this.cancellationTokenSource?.Cancel();
-            this.cancellationTokenSource?.Dispose();
-            this.cancellationTokenSource = null;
+            cancellationTokenSource?.Cancel();
+            cancellationTokenSource?.Dispose();
+            cancellationTokenSource = null;
 
-            this.task?.Wait();
+            task?.Wait();
         }
 
         private void StartWorker()
         {
-            this.cancellationTokenSource = new CancellationTokenSource();
-            this.task = Task.Run(() => this.Worker(this.cancellationTokenSource.Token), this.cancellationTokenSource.Token).ContinueWith(this.OnWorkerTaskCompleted);
+            cancellationTokenSource = new CancellationTokenSource();
+            task = Task.Run(() => Worker(cancellationTokenSource.Token), cancellationTokenSource.Token).ContinueWith(OnWorkerTaskCompleted);
         }
 
         private async Task OnWorkerTaskCompleted(Task task)
@@ -218,9 +216,9 @@ namespace WpfKenBurns
 
             await Application.Current.Dispatcher.InvokeAsync(() =>
             {
-                foreach (ScreensaverWindow window in this.windows)
+                foreach (ScreensaverWindow window in windows)
                 {
-                    window.errorTextBlock.Text = string.Join("\n", task.Exception!.InnerExceptions.Select(ex => ex.Message));
+                    window.errorTextBlock.Text = string.Join("\n", task.Exception.InnerExceptions.Select(ex => ex.Message));
                 }
             });
         }
@@ -231,7 +229,7 @@ namespace WpfKenBurns
 
             await uiDispatcher.InvokeAsync(() =>
             {
-                foreach (ScreensaverWindow window in this.windows)
+                foreach (ScreensaverWindow window in windows)
                 {
                     window.errorTextBlock.Text = null;
                 }
@@ -244,14 +242,14 @@ namespace WpfKenBurns
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                int count = this.windows.Count;
+                int count = windows.Count;
                 Storyboard?[] storyboards = new Storyboard?[count];
                 CountdownEvent countdownEvent = new(count);
 
                 for (int i = 0; i < count; i++)
                 {
-                    ScreensaverWindow window = this.windows[i];
-                    BitmapImage source = this.GetImage();
+                    ScreensaverWindow window = windows[i];
+                    BitmapImage source = GetImage();
 
                     double scale = Math.Max(window.ActualWidth / source.PixelWidth, window.ActualHeight / source.PixelHeight);
                     Size size = new(source.PixelWidth * scale, source.PixelHeight * scale);
@@ -261,7 +259,7 @@ namespace WpfKenBurns
                     Panel container = (Panel)image.Parent;
 
                     ManualResetEventSlim resetEvent = new(false);
-                    storyboards[i] = this.CreateStoryboardAnimation(container, image, size, countdownEvent);
+                    storyboards[i] = CreateStoryboardAnimation(container, image, size, countdownEvent);
                 }
 
                 if (taskCompletionSource != null)
@@ -284,15 +282,15 @@ namespace WpfKenBurns
 
         private BitmapImage GetImage()
         {
-            while (this.fileEnumerator!.Count > 0)
+            while (fileEnumerator!.Count > 0)
             {
-                if (!this.fileEnumerator.MoveNext())
+                if (!fileEnumerator.MoveNext())
                 {
-                    this.fileEnumerator.Reset();
-                    this.fileEnumerator.MoveNext();
+                    fileEnumerator.Reset();
+                    fileEnumerator.MoveNext();
                 }
 
-                string filePath = this.fileEnumerator.Current;
+                string filePath = fileEnumerator.Current;
 
                 try
                 {
@@ -313,7 +311,7 @@ namespace WpfKenBurns
                 catch (Exception ex) when (ex is NotSupportedException or IOException)
                 {
                     Debug.WriteLine($"Failed to load '{filePath}'; removing from list\n{ex}");
-                    this.fileEnumerator.Remove(this.fileEnumerator.Current);
+                    fileEnumerator.Remove(fileEnumerator.Current);
                 }
             }
 
@@ -322,15 +320,15 @@ namespace WpfKenBurns
 
         private Storyboard CreateStoryboardAnimation(Panel container, Image image, Size imageSize, CountdownEvent countdownEvent)
         {
-            if (this.configuration == null)
+            if (configuration == null)
             {
                 return new Storyboard();
             }
 
-            double duration = this.configuration.Duration;
-            double movementFactor = this.configuration.MovementFactor + 1;
-            double scaleFactor = this.configuration.ScaleFactor + 1;
-            double fadeDuration = this.configuration.FadeDuration;
+            double duration = configuration.Duration;
+            double movementFactor = configuration.MovementFactor + 1;
+            double scaleFactor = configuration.ScaleFactor + 1;
+            double fadeDuration = configuration.FadeDuration;
             double totalDuration = duration + fadeDuration * 2;
 
             double width = container.ActualWidth;
@@ -341,11 +339,11 @@ namespace WpfKenBurns
             DoubleAnimation heightAnimation = new();
             DoubleAnimation opacityAnimation = new();
 
-            bool zoomDirection = this.random.Next(2) == 1;
+            bool zoomDirection = random.Next(2) == 1;
             double fromScale = zoomDirection ? scaleFactor : 1;
             double toScale = zoomDirection ? 1 : scaleFactor;
 
-            double angle = this.random.NextDouble() * Math.PI * 2;
+            double angle = random.NextDouble() * Math.PI * 2;
 
             Point p1 = GetPointOnRectangleFromAngle(angle, width * (movementFactor * fromScale - 1), height * (movementFactor * fromScale - 1));
             Point p2 = GetPointOnRectangleFromAngle(angle + Math.PI, width * (movementFactor * toScale - 1), height * (movementFactor * toScale - 1));
@@ -378,10 +376,10 @@ namespace WpfKenBurns
             Storyboard.SetTarget(heightAnimation, image);
             Storyboard.SetTarget(opacityAnimation, image);
 
-            Storyboard.SetTargetProperty(marginAnimation, new PropertyPath(Image.MarginProperty));
-            Storyboard.SetTargetProperty(widthAnimation, new PropertyPath(Image.WidthProperty));
-            Storyboard.SetTargetProperty(heightAnimation, new PropertyPath(Image.HeightProperty));
-            Storyboard.SetTargetProperty(opacityAnimation, new PropertyPath(Image.OpacityProperty));
+            Storyboard.SetTargetProperty(marginAnimation, new PropertyPath(FrameworkElement.MarginProperty));
+            Storyboard.SetTargetProperty(widthAnimation, new PropertyPath(FrameworkElement.WidthProperty));
+            Storyboard.SetTargetProperty(heightAnimation, new PropertyPath(FrameworkElement.HeightProperty));
+            Storyboard.SetTargetProperty(opacityAnimation, new PropertyPath(UIElement.OpacityProperty));
 
             Storyboard storyboard = new();
 
@@ -419,7 +417,7 @@ namespace WpfKenBurns
             uint time = GetLastInputTime();
             long now = Environment.TickCount64;
 
-            if ((now - time) < (now - this.startTime))
+            if ((now - time) < (now - startTime))
             {
                 Application.Current.Dispatcher.BeginInvoke(Application.Current.Shutdown);
             }
