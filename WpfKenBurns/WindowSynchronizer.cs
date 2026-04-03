@@ -67,6 +67,8 @@ namespace WpfKenBurns
         {
             this.handle = handle;
             randomFileEnumerator = RandomFileEnumerator();
+
+            Application.Current.Exit += OnApplicationExit;
         }
 
         public void Start()
@@ -109,12 +111,6 @@ namespace WpfKenBurns
                 Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
                 EnumerateMonitors();
             }
-
-            Application.Current.Exit += (sender, e) =>
-            {
-                cancellationTokenSource?.Cancel();
-                cancellationTokenSource?.Dispose();
-            };
         }
 
         private static uint GetLastInputTime()
@@ -134,6 +130,10 @@ namespace WpfKenBurns
         private void OnApplicationExit(object sender, ExitEventArgs e)
         {
             timer?.Dispose();
+
+            cancellationTokenSource?.Cancel();
+            cancellationTokenSource?.Dispose();
+
             Application.Current.Exit -= OnApplicationExit;
         }
 
