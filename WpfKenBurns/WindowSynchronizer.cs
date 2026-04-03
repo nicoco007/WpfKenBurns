@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -33,7 +34,12 @@ namespace WpfKenBurns
 {
     internal partial class WindowSynchronizer
     {
-        private static readonly string[] ValidImageExtensions = [".bmp", ".gif", ".jpg", ".jpeg", ".png", ".tif", ".tiff", ".wmp"];
+        private static readonly string[] ValidImageExtensions;
+
+        static WindowSynchronizer()
+        {
+            ValidImageExtensions = [.. ImageCodecInfo.GetImageDecoders().SelectMany(codec => codec.FilenameExtension?.Split(';') ?? []).Select(ext => ext.TrimStart('*'))];
+        }
 
         private readonly List<ScreensaverWindow> windows = [];
         private readonly List<string> files = [];
@@ -85,8 +91,8 @@ namespace WpfKenBurns
                 try
                 {
                     files.AddRange(
-                        Directory.GetFiles(folder.Path, "*.*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-                            .Where(path => ValidImageExtensions.Contains(Path.GetExtension(path))));
+                        Directory.EnumerateFiles(folder.Path, "*.*", folder.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+                            .Where(path => ValidImageExtensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase)));
                 }
                 catch (IOException ex)
                 {
