@@ -141,6 +141,11 @@ namespace WpfKenBurns
 
         private void EnumerateMonitors()
         {
+            EnumerateMonitorsAsync().ContinueWith(OnWorkerTaskCompleted, TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        private async Task EnumerateMonitorsAsync()
+        {
             if (resetting)
             {
                 return;
@@ -152,7 +157,8 @@ namespace WpfKenBurns
             }
 
             resetting = true;
-            StopWorker();
+
+            await StopWorkerAsync();
 
             foreach (Window window in windows)
             {
@@ -184,22 +190,50 @@ namespace WpfKenBurns
             EnumerateMonitors();
         }
 
-        private void StopWorker()
+        private void StartWorker()
+        {
+            cancellationTokenSource = new CancellationTokenSource();
+            task = RunWorkerAsync(cancellationTokenSource.Token).ContinueWith(OnWorkerTaskCompleted, TaskContinuationOptions.ExecuteSynchronously);
+        }
+
+        private Task StopWorkerAsync()
         {
             cancellationTokenSource?.Cancel();
             cancellationTokenSource?.Dispose();
             cancellationTokenSource = null;
 
-            task?.Wait();
+            return task?.WaitAsync(CancellationToken.None) ?? Task.CompletedTask;
         }
 
-        private void StartWorker()
+        private async Task RunWorkerAsync(CancellationToken cancellationToken)
         {
-            cancellationTokenSource = new CancellationTokenSource();
-            task = Task.Run(() => Worker(cancellationTokenSource.Token), cancellationTokenSource.Token).ContinueWith(OnWorkerTaskCompleted);
+            foreach (ScreensaverWindow window in windows)
+            {
+                window.errorTextBlock.Text = null;
+            }
+
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                foreach (ScreensaverWindow window in windows)
+                {
+                    BitmapImage source = await GetImageAsync(cancellationToken);
+                    window.PrepareNextImage(source);
+                }
+
+                await Task.WhenAll(windows.Select(w => w.WaitForNext())).WaitAsync(cancellationToken);
+
+                foreach (ScreensaverWindow window in windows)
+                {
+                    window.StartNext();
+                }
+
+                await Task.WhenAll(windows.Select(w => w.WaitForFaded())).WaitAsync(cancellationToken);
+            }
         }
 
-        private async Task OnWorkerTaskCompleted(Task task)
+        private void OnWorkerTaskCompleted(Task task)
         {
             if (!task.IsFaulted)
             {
@@ -208,63 +242,27 @@ namespace WpfKenBurns
 
             Debug.WriteLine(task.Exception);
 
-            await Application.Current.Dispatcher.InvokeAsync(() =>
+            foreach (ScreensaverWindow window in windows)
             {
-                foreach (ScreensaverWindow window in windows)
-                {
-                    window.errorTextBlock.Text = string.Join("\n", task.Exception.InnerExceptions.Select(ex => ex.Message));
-                }
-            });
-        }
-
-        private async Task Worker(CancellationToken cancellationToken)
-        {
-            Dispatcher uiDispatcher = Application.Current.Dispatcher;
-
-            await uiDispatcher.InvokeAsync(() =>
-            {
-                foreach (ScreensaverWindow window in windows)
-                {
-                    window.errorTextBlock.Text = null;
-                }
-            });
-
-            while (true)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                int count = windows.Count;
-
-                for (int i = 0; i < count; i++)
-                {
-                    ScreensaverWindow window = windows[i];
-                    BitmapImage source = GetImage();
-                    await uiDispatcher.InvokeAsync(() => window.PrepareNextImage(source));
-                }
-
-                await Task.WhenAll(windows.Select(w => w.WaitForNext())).WaitAsync(cancellationToken);
-
-                await uiDispatcher.InvokeAsync(() =>
-                {
-                    for (int i = 0; i < count; i++)
-                    {
-                        windows[i].StartNext();
-                    }
-                });
-
-                await Task.WhenAll(windows.Select(w => w.WaitForFaded())).WaitAsync(cancellationToken);
+                window.errorTextBlock.Text = string.Join("\n", task.Exception.InnerExceptions.Select(ex => ex.Message));
             }
         }
 
-        private BitmapImage GetImage()
+        private Task<BitmapImage> GetImageAsync(CancellationToken cancellationToken) => Task.Run(() => GetImage(cancellationToken), cancellationToken);
+
+        private BitmapImage GetImage(CancellationToken cancellationToken)
         {
             while (randomFileEnumerator.MoveNext())
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 string filePath = randomFileEnumerator.Current;
 
                 try
                 {
                     using FileStream fileStream = new(filePath, FileMode.Open, FileAccess.Read);
+
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     BitmapImage image = new();
 
@@ -273,6 +271,8 @@ namespace WpfKenBurns
                     image.CreateOptions = BitmapCreateOptions.None;
                     image.StreamSource = fileStream;
                     image.EndInit();
+
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     image.Freeze();
 
