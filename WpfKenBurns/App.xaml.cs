@@ -15,7 +15,6 @@
 // along with this program.If not, see https://www.gnu.org/licenses/.
 
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -41,15 +40,15 @@ namespace WpfKenBurns
 
             if (e.Args.Length >= 1)
             {
-                string mode = e.Args[0].Trim().ToLower(CultureInfo.InvariantCulture);
+                string mode = e.Args[0].Trim();
 
-                if (mode.StartsWith("/s", StringComparison.InvariantCulture))
+                if (mode.StartsWith("/s", StringComparison.OrdinalIgnoreCase))
                 {
                     WindowSynchronizer sync = new();
                     sync.Start();
                     return;
                 }
-                else if (mode.StartsWith("/p", StringComparison.InvariantCulture))
+                else if (mode.StartsWith("/p", StringComparison.OrdinalIgnoreCase))
                 {
                     string? strHandle = e.Args.Length >= 2 ? e.Args[1] : mode.Split(':').ElementAtOrDefault(1);
 
