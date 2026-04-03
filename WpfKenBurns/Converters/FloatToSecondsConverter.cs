@@ -30,7 +30,8 @@ namespace WpfKenBurns.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return float.TryParse(value as string, out float result) ? result : DependencyProperty.UnsetValue;
+            string? str = (value as string)?.Replace(" s", "").Trim();
+            return float.TryParse(str, NumberStyles.Any, culture, out float result) ? result : DependencyProperty.UnsetValue;
         }
     }
 }
