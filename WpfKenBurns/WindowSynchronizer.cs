@@ -263,7 +263,6 @@ namespace WpfKenBurns
 
                     Panel container = (Panel)image.Parent;
 
-                    ManualResetEventSlim resetEvent = new(false);
                     storyboards[i] = CreateStoryboardAnimation(container, image, size, countdownEvent);
                 }
 
