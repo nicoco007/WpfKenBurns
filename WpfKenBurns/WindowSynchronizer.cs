@@ -129,6 +129,8 @@ namespace WpfKenBurns
 
         private void OnApplicationExit(object sender, ExitEventArgs e)
         {
+            randomFileEnumerator.Dispose();
+
             timer?.Dispose();
 
             cancellationTokenSource?.Cancel();
