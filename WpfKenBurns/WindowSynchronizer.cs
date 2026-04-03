@@ -24,8 +24,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using WpfKenBurns.Native;
@@ -43,7 +41,6 @@ namespace WpfKenBurns
 
         private readonly List<ScreensaverWindow> windows = [];
         private readonly List<string> files = [];
-        private readonly Random random = new();
 
         private readonly IntPtr handle;
 
@@ -132,16 +129,6 @@ namespace WpfKenBurns
             }
 
             return info.Time;
-        }
-
-        private static Point GetPointOnRectangleFromAngle(double angle, double width, double height)
-        {
-            double max = Math.Sqrt(Math.Pow(width / 2, 2) + Math.Pow(height / 2, 2));
-
-            double x = Math.Clamp(Math.Cos(angle) * max, -width / 2, width / 2);
-            double y = Math.Clamp(Math.Sin(angle) * max, -height / 2, height / 2);
-
-            return new Point(x - width / 2, y - height / 2);
         }
 
         private void OnApplicationExit(object sender, ExitEventArgs e)
@@ -240,47 +227,30 @@ namespace WpfKenBurns
                 }
             });
 
-            TaskCompletionSource? taskCompletionSource = null;
-            cancellationToken.Register(() => taskCompletionSource?.TrySetCanceled());
-
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 int count = windows.Count;
-                Storyboard?[] storyboards = new Storyboard?[count];
-                CountdownEvent countdownEvent = new(count);
 
                 for (int i = 0; i < count; i++)
                 {
                     ScreensaverWindow window = windows[i];
                     BitmapImage source = GetImage();
-
-                    double scale = Math.Max(window.ActualWidth / source.PixelWidth, window.ActualHeight / source.PixelHeight);
-                    Size size = new(source.PixelWidth * scale, source.PixelHeight * scale);
-
-                    Image image = await uiDispatcher.InvokeAsync(() => window.CreateImage(source, size));
-
-                    Panel container = (Panel)image.Parent;
-
-                    storyboards[i] = CreateStoryboardAnimation(container, image, size, countdownEvent);
+                    await uiDispatcher.InvokeAsync(() => window.PrepareNextImage(source));
                 }
 
-                if (taskCompletionSource != null)
-                {
-                    await taskCompletionSource.Task;
-                }
+                await Task.WhenAll(windows.Select(w => w.WaitForNext())).WaitAsync(cancellationToken);
 
                 await uiDispatcher.InvokeAsync(() =>
                 {
-                    foreach (Storyboard? storyboard in storyboards)
+                    for (int i = 0; i < count; i++)
                     {
-                        storyboard?.Begin();
+                        windows[i].StartNext();
                     }
                 });
 
-                taskCompletionSource = new TaskCompletionSource();
-                ThreadPool.RegisterWaitForSingleObject(countdownEvent.WaitHandle, (state, timeout) => taskCompletionSource?.TrySetResult(), null, -1, true);
+                await Task.WhenAll(windows.Select(w => w.WaitForFaded())).WaitAsync(cancellationToken);
             }
         }
 
@@ -325,100 +295,6 @@ namespace WpfKenBurns
                     yield return file;
                 }
             }
-        }
-
-        private Storyboard CreateStoryboardAnimation(Panel container, Image image, Size imageSize, CountdownEvent countdownEvent)
-        {
-            if (configuration == null)
-            {
-                return new Storyboard();
-            }
-
-            double duration = configuration.Duration;
-            double movementFactor = configuration.MovementFactor + 1;
-            double scaleFactor = configuration.ScaleFactor + 1;
-            double fadeDuration = configuration.FadeDuration;
-            double totalDuration = duration + fadeDuration * 2;
-
-            double width = container.ActualWidth;
-            double height = container.ActualHeight;
-
-            ThicknessAnimation marginAnimation = new();
-            DoubleAnimation widthAnimation = new();
-            DoubleAnimation heightAnimation = new();
-            DoubleAnimation opacityAnimation = new();
-
-            bool zoomDirection = random.Next(2) == 1;
-            double fromScale = zoomDirection ? scaleFactor : 1;
-            double toScale = zoomDirection ? 1 : scaleFactor;
-
-            double angle = random.NextDouble() * Math.PI * 2;
-
-            Point p1 = GetPointOnRectangleFromAngle(angle, width * (movementFactor * fromScale - 1), height * (movementFactor * fromScale - 1));
-            Point p2 = GetPointOnRectangleFromAngle(angle + Math.PI, width * (movementFactor * toScale - 1), height * (movementFactor * toScale - 1));
-
-            // center image if its proportions aren't identical to the screen's
-            p1.X -= (imageSize.Width - width) / 2;
-            p1.Y -= (imageSize.Height - height) / 2;
-            p2.X -= (imageSize.Width - width) / 2;
-            p2.Y -= (imageSize.Height - height) / 2;
-
-            marginAnimation.From = new Thickness(p1.X, p1.Y, 0, 0);
-            marginAnimation.To = new Thickness(p2.X, p2.Y, 0, 0);
-
-            widthAnimation.From = imageSize.Width * movementFactor * fromScale;
-            widthAnimation.To = imageSize.Width * movementFactor * toScale;
-
-            heightAnimation.From = imageSize.Height * movementFactor * fromScale;
-            heightAnimation.To = imageSize.Height * movementFactor * toScale;
-
-            opacityAnimation.From = 0;
-            opacityAnimation.To = 1;
-
-            marginAnimation.Duration = TimeSpan.FromSeconds(totalDuration);
-            widthAnimation.Duration = TimeSpan.FromSeconds(totalDuration);
-            heightAnimation.Duration = TimeSpan.FromSeconds(totalDuration);
-            opacityAnimation.Duration = TimeSpan.FromSeconds(fadeDuration);
-
-            Storyboard.SetTarget(marginAnimation, image);
-            Storyboard.SetTarget(widthAnimation, image);
-            Storyboard.SetTarget(heightAnimation, image);
-            Storyboard.SetTarget(opacityAnimation, image);
-
-            Storyboard.SetTargetProperty(marginAnimation, new PropertyPath(FrameworkElement.MarginProperty));
-            Storyboard.SetTargetProperty(widthAnimation, new PropertyPath(FrameworkElement.WidthProperty));
-            Storyboard.SetTargetProperty(heightAnimation, new PropertyPath(FrameworkElement.HeightProperty));
-            Storyboard.SetTargetProperty(opacityAnimation, new PropertyPath(UIElement.OpacityProperty));
-
-            Storyboard storyboard = new();
-
-            storyboard.Children.Add(marginAnimation);
-            storyboard.Children.Add(widthAnimation);
-            storyboard.Children.Add(heightAnimation);
-            storyboard.Children.Add(opacityAnimation);
-
-            storyboard.Duration = new(TimeSpan.FromSeconds(totalDuration));
-
-            bool nextStarted = false;
-            TimeSpan durationToNext = TimeSpan.FromSeconds(duration + fadeDuration);
-
-            storyboard.CurrentTimeInvalidated += (sender, args) =>
-            {
-                if (!nextStarted && storyboard.GetCurrentTime() >= durationToNext)
-                {
-                    nextStarted = true;
-                    countdownEvent.Signal();
-                }
-            };
-
-            storyboard.Completed += (sender, args) =>
-            {
-                container.Children.Remove(image);
-            };
-
-            storyboard.Freeze();
-
-            return storyboard;
         }
 
         private void OnTimerTick(object? state)
