@@ -16,7 +16,7 @@
         <ListView x:Name="imageSourcesListView" Margin="10,31,10,231" SelectionMode="Extended" SelectionChanged="FoldersListView_SelectionChanged" ItemsSource="{Binding Folders}">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Path" Width="475">
+                    <GridViewColumn Header="Path" Width="440">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Path}"/>
@@ -24,7 +24,7 @@
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
 
-                    <GridViewColumn Header="Recursive" Width="65">
+                    <GridViewColumn Header="Include Subfolders" Width="110">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <CheckBox IsChecked="{Binding Recursive}"/>
