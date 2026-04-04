@@ -86,7 +86,7 @@ namespace WpfKenBurns
                         continue;
                     }
 
-                    configuration.Folders.Add(new ScreensaverImageFolder(folder, false));
+                    configuration.Folders.Add(new ScreensaverImageFolder(folder, true));
                 }
             }
             catch (Exception ex)
